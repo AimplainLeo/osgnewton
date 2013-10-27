@@ -1,0 +1,114 @@
+MatrixTransform {
+  DataVariance STATIC
+  name "Scene Root"
+  nodeMask 0xff
+  cullingActive TRUE
+  StateSet {
+    UniqueID StateSet_0
+    rendering_hint DEFAULT_BIN
+    renderBinMode INHERIT
+    GL_LIGHTING ON
+  }
+  referenceFrame RELATIVE
+  Matrix {
+    1 0 0 0
+    0 1 0 0
+    0 0 1 0
+    0 0 0 1
+  }
+  num_children 1
+  MatrixTransform {
+    DataVariance STATIC
+    name "levelGeometry"
+    nodeMask 0xff
+    cullingActive TRUE
+    referenceFrame RELATIVE
+    Matrix {
+      1 4.37114e-008 0 0
+      -4.37114e-008 1 0 0
+      0 0 1 0
+      0 0 0 1
+    }
+    num_children 1
+    Geode {
+      UniqueID Geode_1
+      DataVariance STATIC
+      name "levelGeometry-GEODE"
+      nodeMask 0xff
+      cullingActive TRUE
+      num_drawables 1
+      Geometry {
+        name "default_0"
+        StateSet {
+          UniqueID StateSet_2
+          rendering_hint DEFAULT_BIN
+          renderBinMode INHERIT
+          GL_CULL_FACE ON
+          GL_LIGHTING ON
+          GL_NORMALIZE ON
+          Material {
+            name "default_0"
+            ColorMode OFF
+            ambientColor 1 1 1 1
+            diffuseColor 1 1 1 1
+            specularColor 0 0 0 1
+            emissionColor 0 0 0 1
+            shininess 0
+          }
+          textureUnit 0 {
+            GL_TEXTURE_2D ON
+            Texture2D {
+              file "images\\grids.tga"
+              wrap_s REPEAT
+              wrap_t REPEAT
+              wrap_r CLAMP_TO_EDGE
+              min_filter LINEAR_MIPMAP_LINEAR
+              mag_filter LINEAR
+              maxAnisotropy 1
+              borderColor 0 0 0 0
+              borderWidth 0
+              useHardwareMipMapGeneration TRUE
+              unRefImageDataAfterApply FALSE
+              internalFormatMode USE_IMAGE_DATA_FORMAT
+              resizeNonPowerOfTwo TRUE
+            }
+          }
+        }
+        useDisplayList TRUE
+        useVertexBufferObjects FALSE
+        PrimitiveSets 1
+        {
+          DrawArrays TRIANGLES 0 6
+        }
+        VertexArray Vec3Array 6
+        {
+          -176.283 172.87 7.70557e-006
+          -176.283 -172.87 6.77056e-005
+          176.283 -172.87 -7.70557e-006
+          -176.283 172.87 7.70557e-006
+          176.283 -172.87 -7.70557e-006
+          176.283 172.87 -6.77056e-005
+        }
+        NormalBinding PER_VERTEX
+        NormalArray Vec3Array 6
+        {
+          2.13892e-007 1.73541e-007 1
+          2.13892e-007 1.73541e-007 1
+          2.13892e-007 1.73541e-007 1
+          2.13892e-007 1.73541e-007 1
+          2.13892e-007 1.73541e-007 1
+          2.13892e-007 1.73541e-007 1
+        }
+        TexCoordArray 0 Vec2Array 6
+        {
+          -18.7499 19.7499
+          -18.7499 -18.7499
+          19.7499 -18.7499
+          -18.7499 19.7499
+          19.7499 -18.7499
+          19.7499 19.7499
+        }
+      }
+    }
+  }
+}
