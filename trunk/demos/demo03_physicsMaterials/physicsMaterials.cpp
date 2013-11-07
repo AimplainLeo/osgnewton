@@ -38,7 +38,6 @@ class PhysicsWorld: public DemoExample
 		// load the the dynamics physic and visual world
 		LoadDynamicsScene();
 
-
 		// initialize the Camera position after the scene was loaded
 		Camera* const camera = m_viewer->getCamera();
 		ResetCamera (camera->getViewMatrix());
@@ -80,7 +79,7 @@ class PhysicsWorld: public DemoExample
 
 		osg::Vec3 origin (0.0, 10.0f, 4.0f);
 		const int spawnCount = 20;
-		PhysicsMaterialScene (m_viewer, this, spawnCount, origin + osg::Vec3 (-16.0f, 0.0f, 0.0f), dNewtonCollisionSphere (this, 0.5f, m_all));
+		PhysicsMaterialScene (m_viewer, this, spawnCount, origin + osg::Vec3 (-16.0f, 0.0f, 0.0f));
 	}
 };
 

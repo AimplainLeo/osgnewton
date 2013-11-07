@@ -57,6 +57,9 @@ namespace osg
 		Vec4 GetPointVeloc (const Vec4& point) const;
 		void ApplyImpulseToDesiredPointVeloc (const Vec4& point, const Vec4& desiredveloc);
 
+		void SetLinearDrag (const dFloat drag);
+		void SetAngularDrag (const Vec4& drag);
+		
 		protected:
 		newtonDynamicBody();
 	};
@@ -162,6 +165,18 @@ namespace osg
 		dVector tmpVeloc(desiredveloc.ptr());
 		dNewtonDynamicBody::ApplyImpulseToDesiredPointVeloc (&tmpPoint[0], &tmpVeloc[0]);
 	}
+
+	inline void newtonDynamicBody::SetLinearDrag (const dFloat drag)
+	{
+		dNewtonDynamicBody::SetLinearDrag (drag);
+	}
+
+	inline void newtonDynamicBody::SetAngularDrag (const Vec4& drag)
+	{
+		dVector tmp (drag.ptr());
+		dNewtonDynamicBody::SetAngularDrag (&tmp[0]);
+	}
+
 };
 
 #endif

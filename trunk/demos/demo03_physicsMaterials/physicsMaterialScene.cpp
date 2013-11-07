@@ -27,20 +27,23 @@
 #include "physicsMaterialScene.h"
 
 
-void PhysicsMaterialScene (osgViewer::Viewer* const viewer, osg::newtonWorld* const world, int count, const Vec3& origin, const dNewtonCollision& shape)
+static void MakeStaticRamp (osgViewer::Viewer* const viewer, osg::newtonWorld* const world, const Vec3& location, int rampMaterialID)
 {
-	// get the root node
 	dAssert (viewer->getSceneData());
 	Group* const rootGroup = viewer->getSceneData()->asGroup();
 	dAssert (rootGroup);
 
 	// create a texture and apply uv to this mesh
 	ref_ptr<Texture2D> texture = new Texture2D;
-	ref_ptr<Image> image = osgDB::readImageFile("images\\smilli.tga");
+	ref_ptr<Image> image = osgDB::readImageFile("images\\wood_2.tga");
 	texture->setImage (image.get());
 	texture->setWrap(Texture::WRAP_S, Texture::REPEAT);
 	texture->setWrap(Texture::WRAP_R, Texture::REPEAT);
 	texture->setWrap(Texture::WRAP_T, Texture::REPEAT);
+
+	Vec3 blockBoxSize (20.0f, 40.0f, 0.25f);
+	dNewtonCollisionBox shape (world, blockBoxSize.x(), blockBoxSize.y(), blockBoxSize.z(), DemoExample::m_all);
+	
 
 	// create a visual for visual representation
 	newtonMesh boxMesh (&shape);
@@ -53,28 +56,104 @@ void PhysicsMaterialScene (osgViewer::Viewer* const viewer, osg::newtonWorld* co
 	// create a manual object for rendering 
 	ref_ptr<Geode> geometryNode = boxMesh.CreateGeodeNode();
 
-	dFloat mass = 20.0f;
-	dFloat scaleStep = (2.0f - 0.5f) / count;
-	dFloat scaleY = 0.5f;
-	for (int i = 0; i < count; i ++) {
-		Matrix matrix;
+	// make a osg transform node
+	Matrix matrix (Quat (30.0f * 3.141592f / 180.0f, Vec3 (0.0f, 1.0f, 0.0f)));
+	matrix.setTrans (location + Vec3 (0.0f, 20.0f, 0.0f));
+	ref_ptr<MatrixTransform> transformNode = new MatrixTransform(matrix);	
+	rootGroup->addChild(transformNode.get());
 
-		// make a ogre node
-		matrix.setTrans (origin + Vec3 (0.0f, i * 4.0f, 0.0f));
+	// attach geometry to transform node 
+	transformNode->addChild(geometryNode.get());
+
+	// make a dynamic body
+	shape.SetMaterialId(rampMaterialID);
+	new newtonDynamicBody (world, 0.0f, &shape, transformNode.get(), matrix);
+}
+
+
+static void AddFrictionBodies (osgViewer::Viewer* const viewer, osg::newtonWorld* const world, const Vec3& location, int frictionMaterialIDStart)
+{
+	dAssert (viewer->getSceneData());
+	Group* const rootGroup = viewer->getSceneData()->asGroup();
+	dAssert (rootGroup);
+
+	// create a texture and apply uv to this mesh
+	ref_ptr<Texture2D> texture = new Texture2D;
+	ref_ptr<Image> image = osgDB::readImageFile("images\\smilli.tga");
+	texture->setImage (image.get());
+	texture->setWrap(Texture::WRAP_S, Texture::REPEAT);
+	texture->setWrap(Texture::WRAP_R, Texture::REPEAT);
+	texture->setWrap(Texture::WRAP_T, Texture::REPEAT);
+
+	Vec3 blockBoxSize (0.75f, 0.5f, 0.25f);
+	dNewtonCollisionBox shape (world, blockBoxSize.x(), blockBoxSize.y(), blockBoxSize.z(), DemoExample::m_all);
+
+	// create a visual for visual representation
+	newtonMesh boxMesh (&shape);
+	boxMesh.Triangulate();
+	int materialId = boxMesh.AddMaterial(texture);
+
+	// apply uv to this mesh
+	boxMesh.ApplyBoxMapping (materialId, materialId, materialId);
+
+	// create a manual object for rendering 
+	ref_ptr<Geode> geometryNode = boxMesh.CreateGeodeNode();
+	
+	Matrix matrix (Quat (30.0f * 3.141592f / 180.0f, Vec3 (0.0f, 1.0f, 0.0f)));
+	Vec3 origin (location.x() - 6.0f, location.y() + 4.0f, location.z() + 4.0f);
+
+	float mass = 10.0f;
+	for (int i = 0; i < 10; i ++) {
+		// make a osg transform node
+		matrix.setTrans (origin);
 		ref_ptr<MatrixTransform> transformNode = new MatrixTransform(matrix);	
-		transformNode->addChild(geometryNode.get());
 		rootGroup->addChild(transformNode.get());
 
+		origin.y() += 3.0f;
+
+		// attach geometry to transform node 
+		transformNode->addChild(geometryNode.get());
+
 		// make a dynamic body
+		shape.SetMaterialId(frictionMaterialIDStart + i);
 		newtonDynamicBody* const body = new newtonDynamicBody (world, mass, &shape, transformNode.get(), matrix);
 
-		// apply non uniform scale to both 
-		dNewtonCollision* const collision = body->GetCollision();
-//		node->setScale(1.0f, scaleY, 1.0f);
-//		collision->SetScale(1.0f, scaleY, 1.0f);
-
-		scaleY += scaleStep;
+		// set the linear and angular drag do zero
+		body->SetLinearDrag (0.0f);
+		body->SetAngularDrag(Vec4 (0.0f, 0.0f, 0.0f, 0.0f));
 	}
+}
+
+
+void PhysicsMaterialScene (osgViewer::Viewer* const viewer, osg::newtonWorld* const world, int count, const Vec3& origin)
+{
+	int rampMaterialId = 0;
+	int frictionMaterialIDStart = rampMaterialId + 1;
+	int restitutionMaterialIDStart = frictionMaterialIDStart + 10;
+
+	// create 10 diffErent friCtion material 
+	dFloat friction = 0.0f;
+	for (int i = 0; i < 10; i ++) {
+		dMaterialPairManager::dMaterialPair materialInterAction;
+		materialInterAction.m_staticFriction0 = friction;
+		materialInterAction.m_staticFriction1 = friction;
+		materialInterAction.m_kineticFriction0 = friction;
+		materialInterAction.m_kineticFriction1 = friction;
+		world->AddMaterialPair (frictionMaterialIDStart + i, rampMaterialId, materialInterAction);
+		friction += 0.065f;
+	}
+
+	// create 10 restitution materials
+	dFloat restitution = 0.1f;
+	for (int i = 0; i < 10; i ++) {
+		dMaterialPairManager::dMaterialPair materialInterAction;
+		materialInterAction.m_restitution = restitution;
+		world->AddMaterialPair (restitutionMaterialIDStart + i, rampMaterialId, materialInterAction);
+		restitution += 0.1f;
+	}
+
+	MakeStaticRamp (viewer, world, origin, rampMaterialId);
+	AddFrictionBodies (viewer, world, origin, frictionMaterialIDStart);
 }	
 
 
