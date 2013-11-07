@@ -85,7 +85,7 @@ class PhysicsWorld: public DemoExample
 		const int compoundCount = 1;
 
 		// add some compound collision shapes
-		SpawnManualCompoundCollisionShapes (m_viewer, this, compoundCount, origin + Vec3 (-20.0f, 0.0f, 0.0f));
+//		SpawnManualCompoundCollisionShapes (m_viewer, this, compoundCount, origin + Vec3 (-20.0f, 0.0f, 0.0f));
 
 //		SpawnAutomaticCompoundCollisionShapes (m_viewer, this, compoundCount, origin + Vec3 (20.0f, 1.0f, 0.0f), "cow.osg");
 		SpawnAutomaticCompoundCollisionShapes (m_viewer, this, compoundCount, origin + Vec3 (20.0f, 1.0f, 0.0f), "cessna.osg");

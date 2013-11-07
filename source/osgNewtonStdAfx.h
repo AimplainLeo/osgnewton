@@ -40,6 +40,7 @@
 #include <dNewtonDynamicBody.h>
 #include <dNewtonScopeBuffer.h>
 #include <dNewtonInputManager.h>
+#include <dMaterialPairManager.h>
 #include <dNewtonTransformLerp.h>
 #include <dNewtonPlayerManager.h>
 #include <dNewtonTriggerManager.h>

@@ -35,6 +35,7 @@ namespace osg
 
 newtonWorld::newtonWorld (int updateFramerate)
 	:dNewton()
+	,m_materialMap()
 	,m_gravity(0.0f, 0.0f, -9.8f, 0.0f)
 	,m_timestep(0.0f)
 	,m_lastPhysicTimeInMicroseconds(GetTimeInMicrosenconds ())
@@ -121,6 +122,61 @@ bool newtonWorld::GetConcurrentUpdateMode () const
 }
 
 
+bool newtonWorld::OnBodiesAABBOverlap (const dNewtonBody* const body0, const dNewtonBody* const body1, int threadIndex) const
+{
+	dNewtonCollision* const collision0 = body0->GetCollision();
+	dNewtonCollision* const collision1 = body1->GetCollision();
+
+	// check if these two collision shape are part of a hierarchical model
+	void* const node0 = collision0->GetUserData();
+	void* const node1 = collision1->GetUserData();
+	if (node0 && node1) {
+		//both collision are child nodes, check if there are self colliding
+		return GetHierarchyTransformManager()->SelfCollisionTest (node0, node1);
+	}
+
+	// check all other collision using the bitfield mask, 
+	//for now simple return true
+	return (collision0->GetCollisionMask() & collision0->GetCollisionMask()) ? true : false;
+}
+
+bool newtonWorld::OnCompoundSubCollisionAABBOverlap (const dNewtonBody* const body0, const dNewtonCollision* const subShape0, const dNewtonBody* const body1, const dNewtonCollision* const subShape1, int threadIndex) const
+{
+	//	return (subShape0->m_collisionMask & subShape1->m_collisionMask) ? true : false;
+	return true;
+}
+
+void newtonWorld::OnContactProcess (dNewtonContactMaterial* const contactMaterial, dFloat timestep, int threadIndex) const
+{
+	for (void* contact = contactMaterial->GetFirstContact(); contact; contact = contactMaterial->GetNextContact(contact)) {
+		dNewtonCollision* const shape0 = contactMaterial->GetShape0(contact);
+		dNewtonCollision* const shape1 = contactMaterial->GetShape1(contact);
+		const dMaterialPairManager::dMaterialPair* const materialPair = m_materialMap.GetPair (shape0->GetMaterialId(), shape1->GetMaterialId(), threadIndex);
+
+		contactMaterial->SetContactRestitution(contact, materialPair->m_restitution);
+		contactMaterial->SetContactFrictionCoef (contact, materialPair->m_staticFriction0, materialPair->m_kineticFriction0, 0);
+		contactMaterial->SetContactFrictionCoef (contact, materialPair->m_staticFriction1, materialPair->m_kineticFriction1, 1);
+	}
+
+	dNewton::OnContactProcess (contactMaterial, timestep, threadIndex);
+}
+
+
+dMaterialPairManager::dMaterialPair* newtonWorld::GetDefualtMaterialPair ()
+{
+	return m_materialMap.GetDefualtPair ();
+}
+
+void newtonWorld::AddMaterialPair (int materialId0, int materialId1, const dMaterialPairManager::dMaterialPair& pair)
+{
+	m_materialMap.AddPair (materialId0, materialId1, pair);
+}
+
+
+const dMaterialPairManager::dMaterialPair* newtonWorld::GetMaterialPair (int materialId0, int materialId1, int threadIndex) const
+{
+	return m_materialMap.GetPair (materialId0, materialId1, threadIndex);
+}
 
 
 

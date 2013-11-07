@@ -80,7 +80,18 @@ namespace osg
 		void SetConcurrentUpdateMode (bool mode);
 		bool GetConcurrentUpdateMode () const; 
 
+		// physic materials interface
+		dMaterialPairManager::dMaterialPair* GetDefualtMaterialPair ();
+		void AddMaterialPair (int materialId0, int materialId1, const dMaterialPairManager::dMaterialPair& pair);
+		const dMaterialPairManager::dMaterialPair* GetMaterialPair (int materialId0, int materialId1, int threadIndex) const;
+
 		protected:
+		// broad phase aabb overlap filter
+		virtual bool OnBodiesAABBOverlap (const dNewtonBody* const body0, const dNewtonBody* const body1, int threadIndex) const;
+		virtual bool OnCompoundSubCollisionAABBOverlap (const dNewtonBody* const body0, const dNewtonCollision* const subShape0, const dNewtonBody* const body1, const dNewtonCollision* const subShape1, int threadIndex) const;
+		virtual void OnContactProcess (dNewtonContactMaterial* const contacts, dFloat timestep, int threadIndex) const;
+
+		dMaterialPairManager m_materialMap;
 		newtonInputManager* m_inputManager;
 		newtonPlayerManager* m_playerManager;
 		newtonTriggerManager* m_triggerManager;

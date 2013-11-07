@@ -167,7 +167,7 @@ void SpawnAutomaticCompoundCollisionShapes (osgViewer::Viewer* const viewer, osg
 
 	// make a convex approximation for the newton mesh 
 	newtonMesh convexAproximation (world);
-	convexAproximation.CreateApproximateConvexDecomposition(mesh, 0.01f, 0.2f, 640, 500);
+	convexAproximation.CreateApproximateConvexDecomposition(mesh, 0.05f, 0.1f, 6400, 100);
 
 	// now make a compound collision form the convex approximation
 	dNewtonCollisionCompound compoundShape (world, convexAproximation, DemoExample::m_all);
