@@ -29,10 +29,14 @@
 
 using namespace osg;
 
+// standard joints
 void AddBallAndSockect (osgViewer::Viewer* const viewer, osg::newtonWorld* const world, const Vec3& origin);
 void AddHinge (osgViewer::Viewer* const viewer, osg::newtonWorld* const world, const Vec3& origin);
 void AddUniversal (osgViewer::Viewer* const viewer, osg::newtonWorld* const world, const Vec3& origin);
 void AddSlider (osgViewer::Viewer* const viewer, osg::newtonWorld* const world, const Vec3& origin);
 void AddCylindrical (osgViewer::Viewer* const viewer, osg::newtonWorld* const world, const Vec3& origin);
+
+// relational joints
+void AddGear (osgViewer::Viewer* const viewer, osg::newtonWorld* const world, const Vec3& origin);
 
 #endif
