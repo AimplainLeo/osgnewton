@@ -79,7 +79,8 @@ class PhysicsWorld: public DemoExample
 
 		// add some of the basic joints
 		AddBallAndSockect (m_viewer, this, osg::Vec3 (-10.0f, 0.0f, 0.0f));
-		AddHinges (m_viewer, this, osg::Vec3 (-5.0f, 0.0f, 0.0f));
+		AddHinge (m_viewer, this, osg::Vec3 (-5.0f, 0.0f, 0.0f));
+        AddUniversal (m_viewer, this, osg::Vec3 (2.0f, 0.0f, 0.0f));
 	}
 };
 
