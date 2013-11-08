@@ -234,3 +234,22 @@ void AddSlider (osgViewer::Viewer* const viewer, osg::newtonWorld* const world, 
     // set limit on second axis
     slider->SetLimis (-4.0f, 4.0f);
 }
+
+
+void AddCylindrical (osgViewer::Viewer* const viewer, osg::newtonWorld* const world, const Vec3& origin)
+{
+    // make a reel static
+    newtonDynamicBody* const reel = CreateCylinder(viewer, world, origin + Vec3 (0.0f, 0.0f, 4.0f), 0.25f, 8.0f);
+    reel->SetMassAndInertia (0.0f, 0.0f, 0.0f, 0.0f);
+
+    newtonDynamicBody* const wheel = CreateWheel (viewer, world, origin + Vec3 (0.0f, 0.0f, 4.0f), 1.0f, 0.5f);
+
+    Matrix matrix (wheel->GetMatrix());
+    dNewtonCylindricalJoint* const slider = new dNewtonCylindricalJoint (&dMatrix (matrix.ptr())[0][0], wheel, reel);
+
+    // enable limit of first axis
+    slider->EnableLimit_0(true);
+
+    // set limit on second axis
+    slider->SetLimis_0 (-4.0f, 4.0f);
+}
