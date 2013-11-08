@@ -102,15 +102,21 @@ void AddHinges (osgViewer::Viewer* const viewer, osg::newtonWorld* const world, 
 	Matrix matrix (localPin * box0->GetMatrix());
 	matrix.setTrans (matrix.getTrans() + Vec3 (-size.x() * 0.5f, 0.0f, 0.0f));
 	dNewtonHingeJoint* const hinge0 = new dNewtonHingeJoint (&dMatrix (matrix.ptr())[0][0], box0);
-//  hinge0->SerLimits
+    hinge0->EnableLimits (true);
+    hinge0->SetLimis(-45.0f * 3.141592f / 180.0f, 45.0f * 3.141592f / 180.0f);
 
 	// link the two boxes
 	matrix = localPin * box1->GetMatrix();
 	matrix.setTrans (matrix.getTrans() + Vec3 (-size.x() * 0.5f, 0.0f, 0.0f));
 	dNewtonHingeJoint* const hinge1 = new dNewtonHingeJoint (&dMatrix (matrix.ptr())[0][0], box0, box1);
+    hinge1->EnableLimits (true);
+    hinge1->SetLimis (-45.0f * 3.141592f / 180.0f, 45.0f * 3.141592f / 180.0f);
 
 	// link the two boxes
     matrix = localPin * box2->GetMatrix();
     matrix.setTrans (matrix.getTrans() + Vec3 (-size.x() * 0.5f, 0.0f, 0.0f));
     dNewtonHingeJoint* const hinge2 = new dNewtonHingeJoint (&dMatrix (matrix.ptr())[0][0], box1, box2);
+    hinge2->EnableLimits (true);
+    hinge2->SetLimis (-45.0f * 3.141592f / 180.0f, 45.0f * 3.141592f / 180.0f);
+
 }
