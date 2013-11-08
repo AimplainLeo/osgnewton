@@ -52,6 +52,12 @@ void* newtonSceneBody::AddCollision(const dNewtonCollision* const collision)
 	return scene->AddCollision(collision);
 }
 
+dNewtonCollision* newtonSceneBody::GetCollisionFromHandle(void* const handle)
+{
+	dNewtonCollisionScene* const scene = (dNewtonCollisionScene*) GetCollision();
+	return scene->GetChildFromNode (handle);
+}
+
 void newtonSceneBody::RemoveCollision (void* const handle)
 {
 	dNewtonCollisionScene* const scene = (dNewtonCollisionScene*) GetCollision();
@@ -71,7 +77,7 @@ void newtonSceneBody::EndAddRemoveCollision()
 }
 
 
-void* newtonSceneBody::AddCollisionTree (osg::Node* const treeNode)
+void* newtonSceneBody::AddCollisionTree (osg::Node* const treeNode, dLong collisionMask)
 {
 	newtonWorld* const world = (newtonWorld*) GetNewton();
 
@@ -82,7 +88,7 @@ void* newtonSceneBody::AddCollisionTree (osg::Node* const treeNode)
 	mesh.Polygonize();
 
 	// create a collision tree mesh
-	dNewtonCollisionMesh meshCollision (world, mesh, 0);
+	dNewtonCollisionMesh meshCollision (world, mesh, collisionMask);
 
 	// add this collision to the scene body
 	return AddCollision (&meshCollision);

@@ -24,9 +24,9 @@
 #include <HelpersStdAfx.h>
 #include <Utils.h>
 #include <DemoExample.h>
-#include "physicsMaterialScene.h"
+#include "JointsScene.h"
 
-
+/*
 static void MakeStaticRamp (osgViewer::Viewer* const viewer, osg::newtonWorld* const world, const Vec3& location, int rampMaterialID)
 {
 	dAssert (viewer->getSceneData());
@@ -209,6 +209,10 @@ void PhysicsMaterialScene (osgViewer::Viewer* const viewer, osg::newtonWorld* co
 	AddFrictionBodies (viewer, world, origin, frictionMaterialIDStart);
 	AddRestitutionBodies (viewer, world, origin, restitutionMaterialIDStart);
 }	
+*/
 
 
+void AddBallAndSockect (osgViewer::Viewer* const viewer, osg::newtonWorld* const world, const Vec3& origin)
+{
 
+}

@@ -14,5 +14,6 @@ add_subdirectory (common)
 add_subdirectory (demo01_theBasics)
 add_subdirectory (demo02_collisionShapes)
 add_subdirectory (demo03_physicsMaterials)
+add_subdirectory (demo04_basicJoints)
 
 

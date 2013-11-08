@@ -1,3 +1,4 @@
+
 /* Copyright (c) <2003-2011> <Julio Jerez, Newton Game Dynamics>
 * 
 * This software is provided 'as-is', without any express or implied
@@ -20,35 +21,19 @@
 */
 
 
-#ifndef _OSG_NEWTON_SCENE_BODY_H_
-#define _OSG_NEWTON_SCENE_BODY_H_
 
-#include "osgNewtonStdAfx.h"
-//#include "osgNewtonRayPickManager.h"
+#include "HelpersStdAfx.h"
+
+#ifndef _SPAWN_SINGLE_SHAPE_ARRAY_H_
+#define _SPAWN_SINGLE_SHAPE_ARRAY_H_
+
+using namespace osg;
 
 
-namespace osg
-{
-	class OSG_NEWTON_API newtonSceneBody: public dNewtonDynamicBody
-	{
-		public:
-		newtonSceneBody (newtonWorld* const world, dLong collisionMask);
-		~newtonSceneBody();
 
-		virtual void OnForceAndTorque (dFloat timestep, int threadIndex) {};
+//void PhysicsMaterialScene (osgViewer::Viewer* const viewer, osg::newtonWorld* const world, int count, const Vec3& origin);
 
-		virtual void BeginAddRemoveCollision();
-		virtual void* AddCollision(const dNewtonCollision* const collision);
-
-		//virtual void* AddTerrain (Terrain* const terrain);
-		virtual void* AddCollisionTree (osg::Node* const treeNode, dLong collisionMask);
-
-		dNewtonCollision* GetCollisionFromHandle(void* const handle);
-		
-		virtual void RemoveCollision (void* const handle);
-		virtual void EndAddRemoveCollision();
-	};
-};
+void AddBallAndSockect (osgViewer::Viewer* const viewer, osg::newtonWorld* const world, const Vec3& origin);
 
 
 #endif

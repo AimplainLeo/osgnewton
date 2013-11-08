@@ -23,7 +23,7 @@
 #include <HelpersStdAfx.h>
 #include <Utils.h>
 #include <DemoExample.h>
-#include "physicsMaterialScene.h"
+#include "JointsScene.h"
 
 
 class PhysicsWorld: public DemoExample
@@ -77,9 +77,8 @@ class PhysicsWorld: public DemoExample
 		camMatrix.setTrans (osg::Vec3(0.0f, 0.0f, 3.0f));
 		ResetCamera (camMatrix);
 
-		osg::Vec3 origin (0.0, 10.0f, 4.0f);
-		const int spawnCount = 20;
-		PhysicsMaterialScene (m_viewer, this, spawnCount, origin + osg::Vec3 (-16.0f, 0.0f, 0.0f));
+		// add some of the basic joints
+		AddBallAndSockect (m_viewer, this, osg::Vec3 (-10.0f, 0.0f, 0.0f));
 	}
 };
 
