@@ -153,6 +153,40 @@ void rayPickerManager::PreUpdate(dFloat timestep)
 				body->ApplyImpulseToDesiredPointVeloc (peekPosit, veloc);
 			}
 
+
+            // damp angular velocity
+            //NewtonBodyGetOmega (body, &omega1[0]);
+            //NewtonBodyGetVelocity (body, &veloc1[0]);
+            Vec4 omega1 (body->GetOmega());
+            Vec4 veloc1 (body->GetVeloc());
+            omega1 = omega1 * (0.9f);
+
+            // restore body velocity and angular velocity
+            body->SetVeloc(veloc0);
+            body->SetOmega(omega0);
+
+            // convert the delta velocity change to a external force and torque
+            dFloat Ixx;
+            dFloat Iyy;
+            dFloat Izz;
+            dFloat mass;
+            body->GetMassAndInertia (mass, Ixx, Iyy, Izz);
+
+            matrix.setTrans(Vec3(0.0f, 0.0f, 0.0f));
+
+            Vec4 relOmega (omega1 - omega0);
+            relOmega = matrix.preMult(relOmega);
+            Vec4 angularMomentum (Ixx, Iyy, Izz, 0.0f);
+//          angularMomentum = matrix.RotateVector (angularMomentum.CompProduct(matrix.UnrotateVector(omega1 - omega0)));
+            angularMomentum = componentMultiply (relOmega, angularMomentum);
+            angularMomentum = matrix.postMult(angularMomentum);
+            Vec4 torque (angularMomentum * invTimeStep);
+            body->AddTorque(torque);
+
+            Vec4 relVeloc (veloc1 - veloc0);
+            Vec4 force (relVeloc * (mass * invTimeStep));
+            body->AddForce (force);
+
 		} else {
 			dAssert (0);
 		}

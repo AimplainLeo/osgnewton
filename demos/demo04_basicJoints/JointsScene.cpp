@@ -71,7 +71,6 @@ newtonDynamicBody* CreateBox (osgViewer::Viewer* const viewer, osg::newtonWorld*
 
 void AddBallAndSockect (osgViewer::Viewer* const viewer, osg::newtonWorld* const world, const Vec3& origin)
 {
-/*
 	Vec3 size (1.0f, 1.0f, 1.0f);
 	newtonDynamicBody* const box0 = CreateBox (viewer, world, origin + Vec3 (0.0f, 0.0f, 5.0f), size);
 	newtonDynamicBody* const box1 = CreateBox (viewer, world, origin + Vec3 (1.0f, 1.0f, 4.0f), size);
@@ -85,24 +84,33 @@ void AddBallAndSockect (osgViewer::Viewer* const viewer, osg::newtonWorld* const
 	matrix = box1->GetMatrix();
 	matrix.setTrans (matrix.getTrans() + Vec3 (-size.x() * 0.5f, -size.y() * 0.5f, size.z() * 0.5f));
 	new dNewtonBallAndSocketJoint (&dMatrix (matrix.ptr())[0][0], box0, box1);
-*/
 }
 
 
 void AddHinges (osgViewer::Viewer* const viewer, osg::newtonWorld* const world, const Vec3& origin)
 {
-	Vec3 size (1.0f, 0.125f, 2.0f);
-	newtonDynamicBody* const box0 = CreateBox (viewer, world, origin + Vec3 (0.0f, 0.0f, 2.0f), size);
-//	newtonDynamicBody* const box1 = CreateBox (viewer, world, origin + Vec3 (1.0f, 0.0f, 2.0f), size);
+	Vec3 size (1.5f, 0.125f, 4.0f);
+	newtonDynamicBody* const box0 = CreateBox (viewer, world, origin + Vec3 (0.0f, 0.0f, 4.0f), size);
+	newtonDynamicBody* const box1 = CreateBox (viewer, world, origin + Vec3 (1.5f, 0.0f, 4.0f), size);
+    newtonDynamicBody* const box2 = CreateBox (viewer, world, origin + Vec3 (3.0f, 0.0f, 4.0f), size);
 
-	Matrix localPin (Quat (90.0f * 3.141592f / 180.0f, Vec3 (0.0f, 1.0f, 0.0f)));
+    // the joint pin is the first row of the matrix, to make a upright pin we
+    // take the x axis and rotate by 90 degree around the y axis
+    Matrix localPin (Quat (90.0f * 3.141592f / 180.0f, Vec3 (0.0f, 1.0f, 0.0f)));
+	
 	// connect first box to the world
 	Matrix matrix (localPin * box0->GetMatrix());
 	matrix.setTrans (matrix.getTrans() + Vec3 (-size.x() * 0.5f, 0.0f, 0.0f));
 	dNewtonHingeJoint* const hinge0 = new dNewtonHingeJoint (&dMatrix (matrix.ptr())[0][0], box0);
+//  hinge0->SerLimits
 
 	// link the two boxes
-//	matrix = localPin * box1->GetMatrix();
-//	matrix.setTrans (matrix.getTrans() + Vec3 (-size.x() * 0.5f, 0.0f, 0.0f));
-//	dNewtonHingeJoint* const hinge1 = new dNewtonHingeJoint (&dMatrix (matrix.ptr())[0][0], box1);
+	matrix = localPin * box1->GetMatrix();
+	matrix.setTrans (matrix.getTrans() + Vec3 (-size.x() * 0.5f, 0.0f, 0.0f));
+	dNewtonHingeJoint* const hinge1 = new dNewtonHingeJoint (&dMatrix (matrix.ptr())[0][0], box0, box1);
+
+	// link the two boxes
+    matrix = localPin * box2->GetMatrix();
+    matrix.setTrans (matrix.getTrans() + Vec3 (-size.x() * 0.5f, 0.0f, 0.0f));
+    dNewtonHingeJoint* const hinge2 = new dNewtonHingeJoint (&dMatrix (matrix.ptr())[0][0], box1, box2);
 }
