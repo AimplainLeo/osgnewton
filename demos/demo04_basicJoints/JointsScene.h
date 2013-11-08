@@ -31,9 +31,8 @@ using namespace osg;
 
 
 
-//void PhysicsMaterialScene (osgViewer::Viewer* const viewer, osg::newtonWorld* const world, int count, const Vec3& origin);
 
 void AddBallAndSockect (osgViewer::Viewer* const viewer, osg::newtonWorld* const world, const Vec3& origin);
-
+void AddHinges (osgViewer::Viewer* const viewer, osg::newtonWorld* const world, const Vec3& origin);
 
 #endif
