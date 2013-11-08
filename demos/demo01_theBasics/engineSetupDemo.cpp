@@ -67,7 +67,7 @@ class PhysicsWorld: public DemoExample
 		sceneBody->BeginAddRemoveCollision();
 
 		// add this collision to the scene body
-		sceneBody->AddCollisionTree (node.get());
+		sceneBody->AddCollisionTree (node.get(), DemoExample::m_all);
 
 		// done adding collision shape to the scene body, now optimize the scene
 		sceneBody->EndAddRemoveCollision();

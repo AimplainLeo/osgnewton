@@ -67,7 +67,7 @@ class PhysicsWorld: public DemoExample
 		sceneBody->BeginAddRemoveCollision();
 
 		// add this collision to the scene body
-		sceneBody->AddCollisionTree (node.get());
+		sceneBody->AddCollisionTree (node.get(), DemoExample::m_all);
 
 		// done adding collision shape to the scene body, now optimize the scene
 		sceneBody->EndAddRemoveCollision();
@@ -82,13 +82,13 @@ class PhysicsWorld: public DemoExample
 
 		osg::Vec3 origin (0.0, 10.0f, 4.0f);
 
-		const int compoundCount = 1;
+		const int compoundCount = 20;
 
 		// add some compound collision shapes
-//		SpawnManualCompoundCollisionShapes (m_viewer, this, compoundCount, origin + Vec3 (-20.0f, 0.0f, 0.0f));
+		SpawnManualCompoundCollisionShapes (m_viewer, this, compoundCount, origin + Vec3 (-20.0f, 0.0f, 0.0f));
 
 //		SpawnAutomaticCompoundCollisionShapes (m_viewer, this, compoundCount, origin + Vec3 (20.0f, 1.0f, 0.0f), "cow.osg");
-		SpawnAutomaticCompoundCollisionShapes (m_viewer, this, compoundCount, origin + Vec3 (20.0f, 1.0f, 0.0f), "cessna.osg");
+//		SpawnAutomaticCompoundCollisionShapes (m_viewer, this, compoundCount, origin + Vec3 (20.0f, 1.0f, 0.0f), "cessna.osg");
 		
 
 		// make a convex hull from 200 random points
@@ -98,15 +98,15 @@ class PhysicsWorld: public DemoExample
 		}
 		// spawn 20 of each of the regular solid supported by the engine
 		const int spawnCount = 20;
-//		SpawnSingleShapeArray (m_viewer, this, spawnCount, origin + osg::Vec3 (-16.0f, 0.0f, 0.0f), dNewtonCollisionSphere (this, 0.5f, m_all));
-//		SpawnSingleShapeArray (m_viewer, this, spawnCount, origin + osg::Vec3 (-12.0f, 0.0f, 0.0f), dNewtonCollisionBox (this, 0.5f, 0.75f, 0.6f, m_all));
-//		SpawnSingleShapeArray (m_viewer, this, spawnCount, origin + osg::Vec3 (- 8.0f, 0.0f, 0.0f), dNewtonCollisionCapsule (this, 0.25f, 0.5f, m_all));
-//		SpawnSingleShapeArray (m_viewer, this, spawnCount, origin + osg::Vec3 (- 4.0f, 0.0f, 0.0f), dNewtonCollisionTaperedCapsule (this, 0.25f, 0.35f, 0.5f, m_all));
-//		SpawnSingleShapeArray (m_viewer, this, spawnCount, origin + osg::Vec3 (  0.0f, 0.0f, 0.0f), dNewtonCollisionCone (this, 0.25f, 0.75f, m_all));
-//		SpawnSingleShapeArray (m_viewer, this, spawnCount, origin + osg::Vec3 (  4.0f, 0.0f, 0.0f), dNewtonCollisionCylinder (this, 0.25f, 0.5f, m_all));
-//		SpawnSingleShapeArray (m_viewer, this, spawnCount, origin + osg::Vec3 (  8.0f, 0.0f, 0.0f), dNewtonCollisionTaperedCylinder (this, 0.25f, 0.35f, 0.5f, m_all));
-//		SpawnSingleShapeArray (m_viewer, this, spawnCount, origin + osg::Vec3 ( 12.0f, 0.0f, 0.0f), dNewtonCollisionChamferedCylinder (this, 0.25f, 0.5f, m_all));
-//		SpawnSingleShapeArray (m_viewer, this, spawnCount, origin + osg::Vec3 ( 16.0f, 0.0f, 0.0f), dNewtonCollisionConvexHull (this, points.GetElementsCount(), &points[0].m_x, sizeof (dVector), 1.0e-3f, m_all));
+		SpawnSingleShapeArray (m_viewer, this, spawnCount, origin + osg::Vec3 (-16.0f, 0.0f, 0.0f), dNewtonCollisionSphere (this, 0.5f, m_all));
+		SpawnSingleShapeArray (m_viewer, this, spawnCount, origin + osg::Vec3 (-12.0f, 0.0f, 0.0f), dNewtonCollisionBox (this, 0.5f, 0.75f, 0.6f, m_all));
+		SpawnSingleShapeArray (m_viewer, this, spawnCount, origin + osg::Vec3 (- 8.0f, 0.0f, 0.0f), dNewtonCollisionCapsule (this, 0.25f, 0.5f, m_all));
+		SpawnSingleShapeArray (m_viewer, this, spawnCount, origin + osg::Vec3 (- 4.0f, 0.0f, 0.0f), dNewtonCollisionTaperedCapsule (this, 0.25f, 0.35f, 0.5f, m_all));
+		SpawnSingleShapeArray (m_viewer, this, spawnCount, origin + osg::Vec3 (  0.0f, 0.0f, 0.0f), dNewtonCollisionCone (this, 0.25f, 0.75f, m_all));
+		SpawnSingleShapeArray (m_viewer, this, spawnCount, origin + osg::Vec3 (  4.0f, 0.0f, 0.0f), dNewtonCollisionCylinder (this, 0.25f, 0.5f, m_all));
+		SpawnSingleShapeArray (m_viewer, this, spawnCount, origin + osg::Vec3 (  8.0f, 0.0f, 0.0f), dNewtonCollisionTaperedCylinder (this, 0.25f, 0.35f, 0.5f, m_all));
+		SpawnSingleShapeArray (m_viewer, this, spawnCount, origin + osg::Vec3 ( 12.0f, 0.0f, 0.0f), dNewtonCollisionChamferedCylinder (this, 0.25f, 0.5f, m_all));
+		SpawnSingleShapeArray (m_viewer, this, spawnCount, origin + osg::Vec3 ( 16.0f, 0.0f, 0.0f), dNewtonCollisionConvexHull (this, points.GetElementsCount(), &points[0].m_x, sizeof (dVector), 1.0e-3f, m_all));
 	}
 };
 
