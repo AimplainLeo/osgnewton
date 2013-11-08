@@ -33,5 +33,6 @@ void AddBallAndSockect (osgViewer::Viewer* const viewer, osg::newtonWorld* const
 void AddHinge (osgViewer::Viewer* const viewer, osg::newtonWorld* const world, const Vec3& origin);
 void AddUniversal (osgViewer::Viewer* const viewer, osg::newtonWorld* const world, const Vec3& origin);
 void AddSlider (osgViewer::Viewer* const viewer, osg::newtonWorld* const world, const Vec3& origin);
+void AddCylindrical (osgViewer::Viewer* const viewer, osg::newtonWorld* const world, const Vec3& origin);
 
 #endif

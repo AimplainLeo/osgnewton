@@ -82,6 +82,7 @@ class PhysicsWorld: public DemoExample
 		AddHinge (m_viewer, this, osg::Vec3 (-5.0f, 0.0f, 0.0f));
         AddUniversal (m_viewer, this, osg::Vec3 (2.0f, 0.0f, 0.0f));
         AddSlider (m_viewer, this, osg::Vec3 (8.0f, 0.0f, 0.0f));
+        AddCylindrical (m_viewer, this, osg::Vec3 (-10.0f, 5.0f, 0.0f));
 	}
 };
 
