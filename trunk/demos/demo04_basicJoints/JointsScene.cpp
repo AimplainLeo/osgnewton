@@ -148,6 +148,20 @@ newtonDynamicBody* CreateWheel (osgViewer::Viewer* const viewer, osg::newtonWorl
     return new newtonDynamicBody (world, 10.0f, &shape, transformNode.get(), matrix);
 }
 
+static dNewtonHingeJoint* AddHingeWheel (osgViewer::Viewer* const viewer, osg::newtonWorld* const world, const Vec3& origin, dFloat radius, dFloat height, newtonDynamicBody* const parent)
+{
+    newtonDynamicBody* const wheel = CreateWheel (viewer, world, origin, height, radius);
+
+    // the joint pin is the first row of the matrix
+    Matrix localPin (Quat (0.0f * 3.141592f / 180.0f, Vec3 (0.0f, 1.0f, 0.0f)));
+
+    // connect first box to the world
+    Matrix matrix (localPin * wheel->GetMatrix());
+    return new dNewtonHingeJoint (&dMatrix (matrix.ptr())[0][0], wheel, parent);
+}
+
+
+
 
 void AddBallAndSockect (osgViewer::Viewer* const viewer, osg::newtonWorld* const world, const Vec3& origin)
 {
@@ -252,4 +266,26 @@ void AddCylindrical (osgViewer::Viewer* const viewer, osg::newtonWorld* const wo
 
     // set limit on second axis
     slider->SetLimis_0 (-4.0f, 4.0f);
+}
+
+
+void AddGear (osgViewer::Viewer* const viewer, osg::newtonWorld* const world, const Vec3& origin)
+{
+    newtonDynamicBody* const reel = CreateCylinder(viewer, world, origin + Vec3 (0.0f, 0.0f, 4.0f), 0.25f, 4.0f);
+    reel->SetMassAndInertia (0.0f, 0.0f, 0.0f, 0.0f);
+
+    dNewtonHingeJoint* const hinge0 = AddHingeWheel (viewer, world, origin + Vec3 (-1.0f, 0.0f, 4.0f), 0.5f, 1.0f, reel);
+    dNewtonHingeJoint* const hinge1 = AddHingeWheel (viewer, world, origin + Vec3 ( 1.0f, 0.0f, 4.0f), 0.5f, 1.0f, reel);
+
+    newtonDynamicBody* const body0 = (newtonDynamicBody*)hinge0->GetBody0();
+    newtonDynamicBody* const body1 = (newtonDynamicBody*)hinge1->GetBody0();
+
+    Matrix matrix0 (body0->GetMatrix());
+    Matrix matrix1 (body1->GetMatrix());
+    matrix0.setTrans (Vec3 (0.0f, 0.0f, 0.0f));
+    matrix1.setTrans (Vec3 (0.0f, 0.0f, 0.0f));
+
+    Vec3 pin0 (matrix0.preMult(Vec3( 1.0f, 0.0f, 0.0f)));
+    Vec3 pin1 (matrix1.preMult(Vec3( 1.0f, 0.0f, 0.0f)));
+    new dNewtonGearJoint (4.0f, pin0.ptr(), body0, pin1.ptr(), body1);
 }
