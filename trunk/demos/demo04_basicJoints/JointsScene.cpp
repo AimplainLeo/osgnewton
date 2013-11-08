@@ -67,6 +67,46 @@ newtonDynamicBody* CreateBox (osgViewer::Viewer* const viewer, osg::newtonWorld*
 	return new newtonDynamicBody (world, 10.0f, &shape, transformNode.get(), matrix);
 }
 
+newtonDynamicBody* CreateCylinder (osgViewer::Viewer* const viewer, osg::newtonWorld* const world, const Vec3& location, dFloat radius, dFloat height)
+{
+    dAssert (viewer->getSceneData());
+    Group* const rootGroup = viewer->getSceneData()->asGroup();
+    dAssert (rootGroup);
+
+    // create a texture and apply uv to this mesh
+    ref_ptr<Texture2D> texture = new Texture2D;
+    ref_ptr<Image> image = osgDB::readImageFile("images\\smilli.tga");
+    texture->setImage (image.get());
+    texture->setWrap(Texture::WRAP_S, Texture::REPEAT);
+    texture->setWrap(Texture::WRAP_R, Texture::REPEAT);
+    texture->setWrap(Texture::WRAP_T, Texture::REPEAT);
+
+    dNewtonCollisionCylinder shape (world, radius, height, DemoExample::m_all);
+
+    // create a visual for visual representation
+    newtonMesh boxMesh (&shape);
+    boxMesh.Triangulate();
+    int materialId = boxMesh.AddMaterial(texture);
+
+    // apply uv to this mesh
+    boxMesh.ApplyCylindricalMapping(materialId, materialId);
+
+    // create a manual object for rendering 
+    ref_ptr<Geode> geometryNode = boxMesh.CreateGeodeNode();
+
+    // make a osg transform node
+    Matrix matrix;
+    matrix.setTrans (location + Vec3 (0.0f, 20.0f, 0.0f));
+    ref_ptr<MatrixTransform> transformNode = new MatrixTransform(matrix);	
+    rootGroup->addChild(transformNode.get());
+
+    // attach geometry to transform node 
+    transformNode->addChild(geometryNode.get());
+
+    // make a dynamic body
+    return new newtonDynamicBody (world, 10.0f, &shape, transformNode.get(), matrix);
+}
+
 
 newtonDynamicBody* CreateWheel (osgViewer::Viewer* const viewer, osg::newtonWorld* const world, const Vec3& location, dFloat radius, dFloat height)
 {
@@ -174,4 +214,23 @@ void AddUniversal (osgViewer::Viewer* const viewer, osg::newtonWorld* const worl
 
     // set limit on second axis
     universal->SetLimis_1 (-500.0f * 3.141592f / 180.0f, 500.0f * 3.141592f / 180.0f);
+}
+
+
+void AddSlider (osgViewer::Viewer* const viewer, osg::newtonWorld* const world, const Vec3& origin)
+{
+    // make a reel static
+    newtonDynamicBody* const reel = CreateBox (viewer, world, origin + Vec3 (0.0f, 0.0f, 4.0f), Vec3 (8.0f, 0.25f, 0.25f));
+    reel->SetMassAndInertia (0.0f, 0.0f, 0.0f, 0.0f);
+
+    newtonDynamicBody* const wheel = CreateWheel (viewer, world, origin + Vec3 (0.0f, 0.0f, 4.0f), 1.0f, 0.5f);
+
+    Matrix matrix (wheel->GetMatrix());
+    dNewtonSliderJoint* const slider = new dNewtonSliderJoint (&dMatrix (matrix.ptr())[0][0], wheel, reel);
+
+    // enable limit of first axis
+    slider->EnableLimits(true);
+
+    // set limit on second axis
+    slider->SetLimis (-4.0f, 4.0f);
 }
