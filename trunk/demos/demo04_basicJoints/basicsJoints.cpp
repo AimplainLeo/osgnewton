@@ -78,14 +78,16 @@ class PhysicsWorld: public DemoExample
 		ResetCamera (camMatrix);
 
 		// add standard joints example
-		AddBallAndSockect (m_viewer, this, osg::Vec3 (-10.0f, 0.0f, 0.0f));
-		AddHinge (m_viewer, this, osg::Vec3 (-5.0f, 5.0f, 0.0f));
-        AddUniversal (m_viewer, this, osg::Vec3 (2.0f, 0.0f, 0.0f));
-        AddSlider (m_viewer, this, osg::Vec3 (8.0f, 0.0f, 0.0f));
+		AddBallAndSockect (m_viewer, this, osg::Vec3 (-15.0f, 5.0f, 0.0f));
         AddCylindrical (m_viewer, this, osg::Vec3 (-10.0f, 5.0f, 0.0f));
+		AddHinge (m_viewer, this, osg::Vec3 (-5.0f, 5.0f, 0.0f));
+        AddUniversal (m_viewer, this, osg::Vec3 (2.0f, 5.0f, 0.0f));
+        AddSlider (m_viewer, this, osg::Vec3 (8.0f, 5.0f, 0.0f));
 
         //add relational joints example 
-        AddGear (m_viewer, this, osg::Vec3 (-3.0f, 0.0f, 0.0f));
+        AddGear (m_viewer, this, osg::Vec3 (-10.0f, -5.0f, 0.0f));
+        AddPulley (m_viewer, this, osg::Vec3 (0.0f, -5.0f, 0.0f));
+        AddGearAndRack (m_viewer, this, osg::Vec3 (10.0f, -5.0f, 0.0f));
 	}
 };
 
