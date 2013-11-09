@@ -49,6 +49,9 @@ class ForkliftPhysicsModel: public newtonArticulationManager::articulatedTransfo
 		int m_palette;
 	};
 
+	class TraverseNode;
+	class ARTICULATED_VEHICLE_DEFINITION;
+
 	ForkliftPhysicsModel (osgViewer::Viewer* const viewer, osg::newtonWorld* const world, const char* const fileName, const Vec3& origin);
 	~ForkliftPhysicsModel();
 

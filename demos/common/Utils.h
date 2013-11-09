@@ -32,6 +32,7 @@
 dFloat Rand (dFloat base);
 void InitWindowsSystem (osgViewer::Viewer& viewer, const char* const title, int x, int y, int width, int height);
 void SetCameraProjectionMatrix (osgViewer::Viewer& viewer, dFloat viewAngleInDegress, dFloat aspectRation, dFloat nearPlane, dFloat farPlane);
+osg::Node* FindNodeByName (const std::string& name, osg::Node* const rootNode);
 
 
 class KeyTrigger

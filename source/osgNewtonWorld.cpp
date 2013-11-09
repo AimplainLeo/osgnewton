@@ -208,7 +208,7 @@ void newtonWorld::Update ()
 				Matrix visualMatrix(&physMatrix[0][0]);
 				node->setMatrix (visualMatrix);
 
-				// update the application user data (that need to be update at rendering time, ex animations, particles emitions, etc)
+				// update the application user data (that need to be update at rendering time, ex animations, particles emittions, etc)
 				body->OnApplicationPostTransform (applicationTime);
 			}
 		}
