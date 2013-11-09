@@ -77,6 +77,14 @@ class PhysicsWorld: public DemoExample
 		camMatrix.setTrans (osg::Vec3(0.0f, 0.0f, 3.0f));
 		ResetCamera (camMatrix);
 
+		// get a start position close to the ground
+		Vec4 start(0.0f, 10.0f, 1000.0f, 0.0f);
+		Vec4 end(0.0f, 10.0f, -1000.0f, 0.0f);
+		newtonRayCast raycaster (this, DemoExample::m_rayCast); 
+		raycaster.CastRay (start, end);
+
+		ForkliftPhysicsModel* const forkLift = new ForkliftPhysicsModel(m_viewer, this, "forklift.osg", Vec3 (raycaster.m_contact.x(), raycaster.m_contact.y(), raycaster.m_contact.z()));
+
 	}
 };
 

@@ -40,7 +40,6 @@ newtonArticulationManager::~newtonArticulationManager ()
 newtonArticulationManager::articulatedTransformController::articulatedTransformController (newtonArticulationManager* const manager, bool projectError)
 	:dNewtonArticulationController (manager, projectError)
 {
-	dAssert (0);
 }
 
 newtonArticulationManager::articulatedTransformController::~articulatedTransformController()

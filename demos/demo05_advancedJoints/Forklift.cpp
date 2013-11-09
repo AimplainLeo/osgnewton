@@ -60,21 +60,33 @@ class ForkliftTireBody: public OgreNewtonDynamicBody
 	}
 	OgreNewtonDynamicBody* m_rootBody;
 };
+*/
 
-
-ForkliftPhysicsModel::ForkliftPhysicsModel (DemoApplication* const application, const char* const fileName, const Vector3& origin, const String& rootName)
-	:OgreNewtonArticulatedTransformController(application->GetPhysics()->GetHierarchyTransformManager(), true)
-	,m_application(application)
-	,m_liftPosit(0.0f)
-	,m_openPosit(0.0f)
-	,m_tiltAngle(0.0f)
+ForkliftPhysicsModel::ForkliftPhysicsModel (osgViewer::Viewer* const viewer, osg::newtonWorld* const world, const char* const fileName, const Vec3& origin)
+	:newtonArticulationManager::articulatedTransformController (world->GetHierarchyTransformManager(), true)
+//	,m_application(application)
+//	,m_liftPosit(0.0f)
+//	,m_openPosit(0.0f)
+//	,m_tiltAngle(0.0f)
 {
-	SceneManager* const sceneMgr = application->GetSceneManager();
+	dAssert (viewer->getSceneData());
+	Group* const rootGroup = viewer->getSceneData()->asGroup();
+	dAssert (rootGroup);
 
+	// load the mesh
+	ref_ptr<Node> vehicleNode = osgDB::readNodeFile(fileName);
+
+	// add the node to the scene root node
+	rootGroup->addChild(vehicleNode.get());
+
+/*
+	SceneManager* const sceneMgr = application->GetSceneManager();
 	// load the Ogre model form and Ogre scene 
 	DotSceneLoader loader;
 	SceneNode* const forkliftRoot = CreateNode (sceneMgr, NULL, Vector3::ZERO, Quaternion::IDENTITY);
 	loader.parseDotScene (fileName, "Autodetect", sceneMgr, forkliftRoot, rootName);
+
+
 
 	// find all vehicle components
 	SceneNode* const bodyNode = (SceneNode*) forkliftRoot->getChild (rootName + "body");
@@ -159,6 +171,7 @@ ForkliftPhysicsModel::ForkliftPhysicsModel (DemoApplication* const application, 
 
 	// disable self collision between all body parts
 	DisableAllSelfCollision();
+*/
 }
 
 ForkliftPhysicsModel::~ForkliftPhysicsModel()
@@ -166,6 +179,8 @@ ForkliftPhysicsModel::~ForkliftPhysicsModel()
 }
 
 
+
+/*
 void* ForkliftPhysicsModel::AddBone (dNewtonBody* const bone, const dFloat* const bindMatrix, void* const parentBodne)
 {	
 	// add the bode to the controller
@@ -180,13 +195,6 @@ void* ForkliftPhysicsModel::AddBone (dNewtonBody* const bone, const dFloat* cons
 }
 
 
-void ForkliftPhysicsModel::OnUpdateBoneTransform (dNewtonBody* const bone, const dFloat* const localMatrix)
-{
-	if (bone->GetSleepState()) {
-		bone->Update (localMatrix);
-	}
-	bone->SetTargetMatrix (localMatrix);
-}
 
 
 OgreNewtonDynamicBody* ForkliftPhysicsModel::CreateRootBody (SceneNode* const node, const Vector3& origin)
@@ -349,10 +357,23 @@ void ForkliftPhysicsModel::ApplyInputs(const InputRecored& inputs)
 {
 	m_inputRecored = inputs;
 }
+*/
+
+void ForkliftPhysicsModel::OnUpdateBoneTransform (dNewtonBody* const bone, const dFloat* const localMatrix)
+{
+	dAssert(0);
+/*
+	if (bone->GetSleepState()) {
+		bone->Update (localMatrix);
+	}
+	bone->SetTargetMatrix (localMatrix);
+*/
+}
+
 
 void ForkliftPhysicsModel::OnPreUpdate (dFloat timestep)
 {
-
+/*
 	// apply steering control
 	Real steeringAngle = m_rearTire[0]->GetActuatorAngle1();
 	if (m_inputRecored.m_steering < 0) {
@@ -432,5 +453,5 @@ void ForkliftPhysicsModel::OnPreUpdate (dFloat timestep)
 	for (int i = 0; i < sizeof (m_slideTooth) / sizeof (m_slideTooth[0]); i ++) {
 		m_slideTooth[i]->SetTargetPosit(toothPosit);
 	}
-}
 */
+}

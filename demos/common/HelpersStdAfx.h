@@ -40,7 +40,7 @@
 //#include <osgNewtonPlayerManager.h>
 #include <osgNewtonRayPickManager.h>
 //#include <osgNewtonTriggerManager.h>
-//#include <osgNewtonArticulationManager.h>
+#include <osgNewtonArticulationManager.h>
 
 
 
