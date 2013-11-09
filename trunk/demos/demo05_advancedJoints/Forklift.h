@@ -28,10 +28,10 @@
 
 using namespace osg;
 
-/*
+
 class DemoApplication;
 
-class ForkliftPhysicsModel: public OgreNewtonArticulationManager::OgreNewtonArticulatedTransformController
+class ForkliftPhysicsModel: public newtonArticulationManager::articulatedTransformController
 {
 	public:
 	class InputRecored
@@ -49,21 +49,21 @@ class ForkliftPhysicsModel: public OgreNewtonArticulationManager::OgreNewtonArti
 		int m_palette;
 	};
 
-
-	ForkliftPhysicsModel (DemoApplication* const application, const char* const fileName, const Vector3& origin, const String& rootName);
+	ForkliftPhysicsModel (osgViewer::Viewer* const viewer, osg::newtonWorld* const world, const char* const fileName, const Vec3& origin);
 	~ForkliftPhysicsModel();
-
-
-	void ApplyInputs(const InputRecored& inputs);
-	virtual void* AddBone (dNewtonBody* const bone, const dFloat* const bindMatrix, void* const parentBodne);
 
 	virtual void OnPreUpdate (dFloat timestep);
 	virtual void OnUpdateBoneTransform (dNewtonBody* const bone, const dFloat* const localMatrix);
 
-	OgreNewtonDynamicBody* CreateRootBody (SceneNode* const node, const Vector3& origin);
-	OgreNewtonDynamicBody* CreateTireBody (SceneNode* const tireNode, const Vector3& origin);
-	OgreNewtonDynamicBody* CreateBasePlatform (SceneNode* const baseNode, const Vector3& origin);
-	OgreNewtonDynamicBody* CreateTooth (SceneNode* const baseNode, const Vector3& origin);
+/*
+	void ApplyInputs(const InputRecored& inputs);
+	virtual void* AddBone (dNewtonBody* const bone, const dFloat* const bindMatrix, void* const parentBodne);
+
+
+	OgreNewtonDynamicBody* CreateRootBody (SceneNode* const node, const Vec3& origin);
+	OgreNewtonDynamicBody* CreateTireBody (SceneNode* const tireNode, const Vec3& origin);
+	OgreNewtonDynamicBody* CreateBasePlatform (SceneNode* const baseNode, const Vec3& origin);
+	OgreNewtonDynamicBody* CreateTooth (SceneNode* const baseNode, const Vec3& origin);
 
 	dNewtonHingeJoint* LinkFrontTire (OgreNewtonDynamicBody* const tire);
 	dNewtonUniversalActuator* LinkRearTire (OgreNewtonDynamicBody* const tire);
@@ -72,30 +72,26 @@ class ForkliftPhysicsModel: public OgreNewtonArticulationManager::OgreNewtonArti
 	dNewtonHingeActuator* LinkBasePlatform (OgreNewtonDynamicBody* const platform);
 	dNewtonSliderActuator* LinkBasePlatform (OgreNewtonDynamicBody* const parent, OgreNewtonDynamicBody* const platform);
 	dNewtonSliderActuator* LinkTooth(OgreNewtonDynamicBody* const parent, OgreNewtonDynamicBody* const child, Real dir);
-	
 	void CalculateEngine(OgreNewtonDynamicBody* const tire);
+*/
 
-	DemoApplication* m_application;
-	OgreNewtonDynamicBody* m_rootBody;
-	OgreNewtonDynamicBody* m_frontTireBody[2];
-
-	dNewtonHingeJoint* m_frontTire[2];
-	dNewtonUniversalActuator* m_rearTire[2];
-
-	dNewtonHingeActuator* m_revolvePlatform;
-	dNewtonSliderActuator* m_slidePlaforms[3];
-	dNewtonSliderActuator* m_slideTooth[2];
-
-	Real m_liftPosit;
-	Real m_openPosit;
-	Real m_tiltAngle;
-	Real m_maxEngineTorque;
-	Real m_omegaResistance;
-
+//	DemoApplication* m_application;
+//	OgreNewtonDynamicBody* m_rootBody;
+//	OgreNewtonDynamicBody* m_frontTireBody[2];
+//	dNewtonHingeJoint* m_frontTire[2];
+//	dNewtonUniversalActuator* m_rearTire[2];
+//	dNewtonHingeActuator* m_revolvePlatform;
+//	dNewtonSliderActuator* m_slidePlaforms[3];
+//	dNewtonSliderActuator* m_slideTooth[2];
+//	Real m_liftPosit;
+//	Real m_openPosit;
+//	Real m_tiltAngle;
+//	Real m_maxEngineTorque;
+//	Real m_omegaResistance;
 	InputRecored m_inputRecored;
 };
 
-*/
+
 
 
 #endif

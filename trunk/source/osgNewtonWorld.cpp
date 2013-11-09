@@ -46,7 +46,7 @@ newtonWorld::newtonWorld (int updateFramerate)
 
 	// add some of the essential managers by order of execution
 //	m_triggerManager = new newtonTriggerManager(this);
-//	m_localTransformManager = new newtonArticulationManager (this);
+	m_localTransformManager = new newtonArticulationManager (this);
 //	m_playerManager = new newtonPlayerManager (this);
 	m_rayPickerManager = new rayPickerManager (this, 0);
 	m_inputManager = new newtonInputManager(this);
