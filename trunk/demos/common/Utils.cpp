@@ -25,6 +25,39 @@
 #include "Utils.h"
 
 
+
+osg::Node* FindNodeByName (const std::string& name, osg::Node* const rootNode)
+{
+
+	class TraverseNode: public osg::NodeVisitor 
+	{
+		public:
+		TraverseNode(const std::string& name)
+			:osg::NodeVisitor (NodeVisitor::TRAVERSE_ALL_CHILDREN)
+			,m_found(NULL)
+			,m_name(name)
+		{
+		}
+
+
+		virtual void apply(osg::Node& node)
+		{
+			if (m_name == node.getName()) {
+				m_found = & node;
+				return;
+			}
+			traverse (node);
+		}
+
+		osg::Node* m_found;
+		const std::string m_name;
+	};
+
+	TraverseNode traverse (name);
+	rootNode->accept(traverse);
+	return traverse.m_found;
+}
+
 class DemosFindFileCallback: public osgDB::FindFileCallback
 {
 	public:

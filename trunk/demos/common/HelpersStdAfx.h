@@ -29,6 +29,7 @@
 #include <osgViewer/Viewer>
 #include <osgGA/GUIEventHandler>
 
+
 #include <osgNewtonStdAfx.h>
 #include <osgNewtonMesh.h>
 #include <osgNewtonWorld.h>
