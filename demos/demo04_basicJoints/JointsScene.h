@@ -38,5 +38,6 @@ void AddCylindrical (osgViewer::Viewer* const viewer, osg::newtonWorld* const wo
 
 // relational joints
 void AddGear (osgViewer::Viewer* const viewer, osg::newtonWorld* const world, const Vec3& origin);
-
+void AddPulley (osgViewer::Viewer* const viewer, osg::newtonWorld* const world, const Vec3& origin);
+void AddGearAndRack (osgViewer::Viewer* const viewer, osg::newtonWorld* const world, const Vec3& origin);
 #endif

@@ -27,7 +27,7 @@
 #include "JointsScene.h"
 
 
-newtonDynamicBody* CreateBox (osgViewer::Viewer* const viewer, osg::newtonWorld* const world, const Vec3& location, const Vec3& size)
+static newtonDynamicBody* CreateBox (osgViewer::Viewer* const viewer, osg::newtonWorld* const world, const Vec3& location, const Vec3& size)
 {
 	dAssert (viewer->getSceneData());
 	Group* const rootGroup = viewer->getSceneData()->asGroup();
@@ -67,7 +67,7 @@ newtonDynamicBody* CreateBox (osgViewer::Viewer* const viewer, osg::newtonWorld*
 	return new newtonDynamicBody (world, 10.0f, &shape, transformNode.get(), matrix);
 }
 
-newtonDynamicBody* CreateCylinder (osgViewer::Viewer* const viewer, osg::newtonWorld* const world, const Vec3& location, dFloat radius, dFloat height)
+static newtonDynamicBody* CreateCylinder (osgViewer::Viewer* const viewer, osg::newtonWorld* const world, const Vec3& location, dFloat radius, dFloat height)
 {
     dAssert (viewer->getSceneData());
     Group* const rootGroup = viewer->getSceneData()->asGroup();
@@ -108,7 +108,7 @@ newtonDynamicBody* CreateCylinder (osgViewer::Viewer* const viewer, osg::newtonW
 }
 
 
-newtonDynamicBody* CreateWheel (osgViewer::Viewer* const viewer, osg::newtonWorld* const world, const Vec3& location, dFloat radius, dFloat height)
+static newtonDynamicBody* CreateWheel (osgViewer::Viewer* const viewer, osg::newtonWorld* const world, const Vec3& location, dFloat radius, dFloat height)
 {
     dAssert (viewer->getSceneData());
     Group* const rootGroup = viewer->getSceneData()->asGroup();
@@ -161,6 +161,17 @@ static dNewtonHingeJoint* AddHingeWheel (osgViewer::Viewer* const viewer, osg::n
 }
 
 
+static dNewtonSliderJoint* AddSliderWheel (osgViewer::Viewer* const viewer, osg::newtonWorld* const world, const Vec3& origin, dFloat radius, dFloat height, newtonDynamicBody* const parent)
+{
+    newtonDynamicBody* const wheel = CreateWheel (viewer, world, origin, height, radius);
+
+    // the joint pin is the first row of the matrix
+    Matrix localPin (Quat (0.0f * 3.141592f / 180.0f, Vec3 (0.0f, 1.0f, 0.0f)));
+
+    // connect first box to the world
+    Matrix matrix (localPin * wheel->GetMatrix());
+    return new dNewtonSliderJoint (&dMatrix (matrix.ptr())[0][0], wheel, parent);
+}
 
 
 void AddBallAndSockect (osgViewer::Viewer* const viewer, osg::newtonWorld* const world, const Vec3& origin)
@@ -253,7 +264,7 @@ void AddSlider (osgViewer::Viewer* const viewer, osg::newtonWorld* const world, 
 void AddCylindrical (osgViewer::Viewer* const viewer, osg::newtonWorld* const world, const Vec3& origin)
 {
     // make a reel static
-    newtonDynamicBody* const reel = CreateCylinder(viewer, world, origin + Vec3 (0.0f, 0.0f, 4.0f), 0.25f, 8.0f);
+    newtonDynamicBody* const reel = CreateCylinder(viewer, world, origin + Vec3 (0.0f, 0.0f, 4.0f), 0.25f, 6.0f);
     reel->SetMassAndInertia (0.0f, 0.0f, 0.0f, 0.0f);
 
     newtonDynamicBody* const wheel = CreateWheel (viewer, world, origin + Vec3 (0.0f, 0.0f, 4.0f), 1.0f, 0.5f);
@@ -265,7 +276,7 @@ void AddCylindrical (osgViewer::Viewer* const viewer, osg::newtonWorld* const wo
     slider->EnableLimit_0(true);
 
     // set limit on second axis
-    slider->SetLimis_0 (-4.0f, 4.0f);
+    slider->SetLimis_0 (-3.0f, 3.0f);
 }
 
 
@@ -288,4 +299,36 @@ void AddGear (osgViewer::Viewer* const viewer, osg::newtonWorld* const world, co
     Vec3 pin0 (matrix0.preMult(Vec3( 1.0f, 0.0f, 0.0f)));
     Vec3 pin1 (matrix1.preMult(Vec3( 1.0f, 0.0f, 0.0f)));
     new dNewtonGearJoint (4.0f, pin0.ptr(), body0, pin1.ptr(), body1);
+}
+
+
+void AddPulley (osgViewer::Viewer* const viewer, osg::newtonWorld* const world, const Vec3& origin)
+{
+    newtonDynamicBody* const reel0 = CreateCylinder(viewer, world, origin + Vec3 (0.0f, 3.0f, 4.0f), 0.25f, 4.0f);
+    newtonDynamicBody* const reel1 = CreateCylinder(viewer, world, origin + Vec3 (0.0f, 0.0f, 4.0f), 0.25f, 4.0f);
+    reel0->SetMassAndInertia (0.0f, 0.0f, 0.0f, 0.0f);
+    reel1->SetMassAndInertia (0.0f, 0.0f, 0.0f, 0.0f);
+
+    dNewtonSliderJoint* const slider0 = AddSliderWheel (viewer, world, origin + Vec3 (0.0f, 3.0f, 4.0f), 0.5f, 1.0f, reel0);
+    dNewtonSliderJoint* const slider1 = AddSliderWheel (viewer, world, origin + Vec3 (0.0f, 0.0f, 4.0f), 0.5f, 1.0f, reel1);
+    slider0->EnableLimits(true);
+    slider0->SetLimis (-2.0f, 2.0f);
+
+    newtonDynamicBody* const body0 = (newtonDynamicBody*)slider0->GetBody0();
+    newtonDynamicBody* const body1 = (newtonDynamicBody*)slider1->GetBody0();
+
+    Matrix matrix0 (body0->GetMatrix());
+    Matrix matrix1 (body1->GetMatrix());
+    matrix0.setTrans (Vec3 (0.0f, 0.0f, 0.0f));
+    matrix1.setTrans (Vec3 (0.0f, 0.0f, 0.0f));
+
+    Vec3 pin0 (matrix0.preMult(Vec3( 1.0f, 0.0f, 0.0f)));
+    Vec3 pin1 (matrix1.preMult(Vec3( 1.0f, 0.0f, 0.0f)));
+    new dNewtonPulleyJoint (1.0f, pin0.ptr(), body0, pin1.ptr(), body1);
+
+}
+
+void AddGearAndRack (osgViewer::Viewer* const viewer, osg::newtonWorld* const world, const Vec3& origin)
+{
+
 }
