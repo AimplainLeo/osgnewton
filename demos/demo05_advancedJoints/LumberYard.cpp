@@ -21,11 +21,12 @@
 */
 
 
-#include "HelpersStdAfx.h"
 
-#include "Utils.h"
+#include <HelpersStdAfx.h>
+#include <Utils.h>
+#include <DemoExample.h>
 #include "LumberYard.h"
-#include "DemoExample.h"
+
 
 using namespace osg;
 /*

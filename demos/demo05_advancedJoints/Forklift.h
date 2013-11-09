@@ -23,7 +23,8 @@
 
 #include "HelpersStdAfx.h"
 
-
+#ifndef _FORKLIFT_DEMO_H_
+#define _FORKLIFT_DEMO_H_
 
 using namespace osg;
 
@@ -97,3 +98,4 @@ class ForkliftPhysicsModel: public OgreNewtonArticulationManager::OgreNewtonArti
 */
 
 
+#endif
