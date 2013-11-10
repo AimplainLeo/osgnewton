@@ -65,7 +65,6 @@ static ForkliftPhysicsModel::ARTICULATED_VEHICLE_DEFINITION forkliftDefinition[]
 class ForkliftPhysicsModel::ForkliftTireBody: public newtonDynamicBody
 {
 	public:
-//	ForkliftTireBody (OgreNewtonWorld* const world, dFloat mass, const dNewtonCollision* const collision, SceneNode* const node, const Matrix4& location, newtonDynamicBody* const rootBody)
 	ForkliftTireBody (newtonWorld* const world, dFloat mass, const dNewtonCollision* const collision, MatrixTransform* const node, const Matrix& location)
 		:newtonDynamicBody (world, mass, collision, node, location)
 //		,m_rootBody(rootBody)
