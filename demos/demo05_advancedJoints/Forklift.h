@@ -59,31 +59,33 @@ class ForkliftPhysicsModel: public newtonArticulationManager::articulatedTransfo
 	virtual void OnPreUpdate (dFloat timestep);
 	virtual void OnUpdateBoneTransform (dNewtonBody* const bone, const dFloat* const localMatrix);
 
+	dNewtonHingeJoint* LinkFrontTire (newtonDynamicBody* const tire);
+	dNewtonUniversalActuator* LinkRearTire (newtonDynamicBody* const tire);
 /*
 	void ApplyInputs(const InputRecored& inputs);
 	virtual void* AddBone (dNewtonBody* const bone, const dFloat* const bindMatrix, void* const parentBodne);
 
 
-	OgreNewtonDynamicBody* CreateRootBody (SceneNode* const node, const Vec3& origin);
-	OgreNewtonDynamicBody* CreateTireBody (SceneNode* const tireNode, const Vec3& origin);
-	OgreNewtonDynamicBody* CreateBasePlatform (SceneNode* const baseNode, const Vec3& origin);
-	OgreNewtonDynamicBody* CreateTooth (SceneNode* const baseNode, const Vec3& origin);
+	newtonDynamicBody* CreateRootBody (SceneNode* const node, const Vec3& origin);
+	newtonDynamicBody* CreateTireBody (SceneNode* const tireNode, const Vec3& origin);
+	newtonDynamicBody* CreateBasePlatform (SceneNode* const baseNode, const Vec3& origin);
+	newtonDynamicBody* CreateTooth (SceneNode* const baseNode, const Vec3& origin);
 
-	dNewtonHingeJoint* LinkFrontTire (OgreNewtonDynamicBody* const tire);
-	dNewtonUniversalActuator* LinkRearTire (OgreNewtonDynamicBody* const tire);
+	
+	dNewtonUniversalActuator* LinkRearTire (newtonDynamicBody* const tire);
 	
 
-	dNewtonHingeActuator* LinkBasePlatform (OgreNewtonDynamicBody* const platform);
-	dNewtonSliderActuator* LinkBasePlatform (OgreNewtonDynamicBody* const parent, OgreNewtonDynamicBody* const platform);
-	dNewtonSliderActuator* LinkTooth(OgreNewtonDynamicBody* const parent, OgreNewtonDynamicBody* const child, Real dir);
-	void CalculateEngine(OgreNewtonDynamicBody* const tire);
+	dNewtonHingeActuator* LinkBasePlatform (newtonDynamicBody* const platform);
+	dNewtonSliderActuator* LinkBasePlatform (newtonDynamicBody* const parent, newtonDynamicBody* const platform);
+	dNewtonSliderActuator* LinkTooth(newtonDynamicBody* const parent, newtonDynamicBody* const child, Real dir);
+	void CalculateEngine(newtonDynamicBody* const tire);
 */
 
 //	DemoApplication* m_application;
-//	OgreNewtonDynamicBody* m_rootBody;
-//	OgreNewtonDynamicBody* m_frontTireBody[2];
-//	dNewtonHingeJoint* m_frontTire[2];
-//	dNewtonUniversalActuator* m_rearTire[2];
+//	newtonDynamicBody* m_rootBody;
+//	newtonDynamicBody* m_frontTireBody[2];
+	dNewtonHingeJoint* m_frontTire[2];
+	dNewtonUniversalActuator* m_rearTire[2];
 //	dNewtonHingeActuator* m_revolvePlatform;
 //	dNewtonSliderActuator* m_slidePlaforms[3];
 //	dNewtonSliderActuator* m_slideTooth[2];
