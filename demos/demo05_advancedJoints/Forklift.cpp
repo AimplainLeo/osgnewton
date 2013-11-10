@@ -62,6 +62,37 @@ static ForkliftPhysicsModel::ARTICULATED_VEHICLE_DEFINITION forkliftDefinition[]
 };													
 
 
+class ForkliftPhysicsModel::ForkliftTireBody: public newtonDynamicBody
+{
+	public:
+//	ForkliftTireBody (OgreNewtonWorld* const world, dFloat mass, const dNewtonCollision* const collision, SceneNode* const node, const Matrix4& location, newtonDynamicBody* const rootBody)
+	ForkliftTireBody (newtonWorld* const world, dFloat mass, const dNewtonCollision* const collision, MatrixTransform* const node, const Matrix& location)
+		:newtonDynamicBody (world, mass, collision, node, location)
+//		,m_rootBody(rootBody)
+	{
+	}
+
+	virtual void OnContactProcess (dNewtonContactMaterial* const contactMaterial, dFloat timestep, int threadIndex) const
+	{
+/*
+		Matrix4 tireMatrix (GetMatrix());
+		Matrix4 chassis (m_rootBody->GetMatrix());
+
+		chassis.setTrans (Vector3 (0.0f, 0.0f, 0.0f));
+		tireMatrix.setTrans (Vector3 (0.0f, 0.0f, 0.0f));
+		Vector3 upPin (chassis * Vector3 (0.0f, 1.0f, 0.0f));
+		Vector3 axisPin (chassis * Vector3 (1.0f, 0.0f, 0.0f));
+
+		Vector3 dir (axisPin.crossProduct (upPin));
+		for (void* contact = contactMaterial->GetFirstContact(); contact; contact = contactMaterial->GetNextContact(contact)) {
+			contactMaterial->RotateTangentDirections (contact, &dir.x);
+		}
+*/
+	}
+//	newtonDynamicBody* m_rootBody;
+};
+
+
 class ForkliftPhysicsModel::TraverseNode: public NodeVisitor 
 {
 	public:
@@ -93,8 +124,13 @@ class ForkliftPhysicsModel::TraverseNode: public NodeVisitor
 		const NodePath& path = getNodePath();
 		Matrix matrix (computeLocalToWorld(path));
 
+		newtonDynamicBody* body = NULL;
 		dNewtonCollisionNull placeHolderShape(m_world);
-		newtonDynamicBody* const body = new newtonDynamicBody (m_world, definition->m_mass, &placeHolderShape, node->asMatrixTransform(), matrix);
+		if (strcmp (definition->m_shapeTypeName, "tireShape")) {
+			body = new newtonDynamicBody (m_world, definition->m_mass, &placeHolderShape, node->asMatrixTransform(), matrix);
+		} else {
+			body = new ForkliftTireBody (m_world, definition->m_mass, &placeHolderShape, node->asMatrixTransform(), matrix);
+		}
 
 		// move the center of mass a little to the back	of the chassis
 		//Vector3 com;
@@ -112,7 +148,6 @@ class ForkliftPhysicsModel::TraverseNode: public NodeVisitor
 		ForkliftPhysicsModel::ARTICULATED_VEHICLE_DEFINITION* const definition = FindDefintionRecord (name.c_str());
 		if (definition) {
 			const NodePath& path = getNodePath();
-
 
 			if (!strcmp (definition->m_shapeTypeName, "tireShape")) {
 				const BoundingBox& box = node.getBoundingBox();
@@ -197,42 +232,8 @@ class ForkliftPhysicsModel::TraverseNode: public NodeVisitor
 	Transform* m_parentNode;
 	MatrixTransform* m_currentNode;
 	newtonDynamicBody* m_currentBody;
-
 };
 
-/*
-#define BODY_MASS	800.0f
-#define TIRE_MASS	50.0f
-#define RACK_MASS	50.0f
-#define TOOTH_MASS	50.0f
-
-class ForkliftTireBody: public OgreNewtonDynamicBody
-{
-	public:
-	ForkliftTireBody (OgreNewtonWorld* const world, Real mass, const dNewtonCollision* const collision, SceneNode* const node, const Matrix4& location, OgreNewtonDynamicBody* const rootBody)
-		:OgreNewtonDynamicBody (world, mass, collision, node, location)
-		,m_rootBody(rootBody)
-	{
-	}
-
-	virtual void OnContactProcess (dNewtonContactMaterial* const contactMaterial, dFloat timestep, int threadIndex) const
-	{
-		Matrix4 tireMatrix (GetMatrix());
-		Matrix4 chassis (m_rootBody->GetMatrix());
-		
-		chassis.setTrans (Vector3 (0.0f, 0.0f, 0.0f));
-		tireMatrix.setTrans (Vector3 (0.0f, 0.0f, 0.0f));
-		Vector3 upPin (chassis * Vector3 (0.0f, 1.0f, 0.0f));
-		Vector3 axisPin (chassis * Vector3 (1.0f, 0.0f, 0.0f));
-
-		Vector3 dir (axisPin.crossProduct (upPin));
-		for (void* contact = contactMaterial->GetFirstContact(); contact; contact = contactMaterial->GetNextContact(contact)) {
-			contactMaterial->RotateTangentDirections (contact, &dir.x);
-		}
-	}
-	OgreNewtonDynamicBody* m_rootBody;
-};
-*/
 
 ForkliftPhysicsModel::ForkliftPhysicsModel (osgViewer::Viewer* const viewer, osg::newtonWorld* const world, const char* const fileName, const Vec3& origin)
 	:newtonArticulationManager::articulatedTransformController (world->GetHierarchyTransformManager(), true)
@@ -261,6 +262,24 @@ ForkliftPhysicsModel::ForkliftPhysicsModel (osgViewer::Viewer* const viewer, osg
 	// traverse the hierarchy and create all bodies
 	TraverseNode traverse (this, world);
 	rootNode->accept(traverse);
+
+	int stack = 1;
+	void* pool[32];
+	pool[0] = GetBone(0);
+	while (stack) {
+		stack --;
+		void* const bone = pool[stack];
+		newtonDynamicBody* const body = (newtonDynamicBody*) GetBoneBody (bone);
+		MatrixTransform* const transformNode = (MatrixTransform*)body->GetUserData();
+
+		for (dNewtonBody* child = body->GetChild(); child; child = child->GetSibling()) {
+			pool[stack] = child->GetBoneArticulation();
+			stack ++;
+		}
+	}
+
+
+
 /*
 	// find all vehicle components
 	SceneNode* const bodyNode = (SceneNode*) forkliftRoot->getChild (rootName + "body");
@@ -295,20 +314,20 @@ ForkliftPhysicsModel::ForkliftPhysicsModel (osgViewer::Viewer* const viewer, osg
 	void* const parentBone = AddBone (m_rootBody, &bindMatrix[0][0], NULL);
 
 	// make the tires
-	OgreNewtonDynamicBody* const rearLeftTireBody = CreateTireBody (rl_tireNode, origin);
-	OgreNewtonDynamicBody* const rearRightTireBody = CreateTireBody (rr_tireNode, origin);
+	newtonDynamicBody* const rearLeftTireBody = CreateTireBody (rl_tireNode, origin);
+	newtonDynamicBody* const rearRightTireBody = CreateTireBody (rr_tireNode, origin);
 	m_frontTireBody[0] = CreateTireBody (fl_tireNode, origin);
 	m_frontTireBody[1] = CreateTireBody (fr_tireNode, origin);
 
 	// make the lift base
-	OgreNewtonDynamicBody* const base1 = CreateBasePlatform (base1Node, origin);
-	OgreNewtonDynamicBody* const base2 = CreateBasePlatform (base2Node, origin);
-	OgreNewtonDynamicBody* const base3 = CreateBasePlatform (base3Node, origin);
-	OgreNewtonDynamicBody* const base4 = CreateBasePlatform (base4Node, origin);
+	newtonDynamicBody* const base1 = CreateBasePlatform (base1Node, origin);
+	newtonDynamicBody* const base2 = CreateBasePlatform (base2Node, origin);
+	newtonDynamicBody* const base3 = CreateBasePlatform (base3Node, origin);
+	newtonDynamicBody* const base4 = CreateBasePlatform (base4Node, origin);
 
 	// make the left and right palette teeth
-	OgreNewtonDynamicBody* const leftTooth = CreateTooth (leftTeethNode, origin);
-	OgreNewtonDynamicBody* const rightTooth = CreateTooth (rightTeethNode, origin);
+	newtonDynamicBody* const leftTooth = CreateTooth (leftTeethNode, origin);
+	newtonDynamicBody* const rightTooth = CreateTooth (rightTeethNode, origin);
 
 	// add the tire as children bodies
 	AddBone (rearLeftTireBody, &bindMatrix[0][0], parentBone);
@@ -370,7 +389,7 @@ void* ForkliftPhysicsModel::AddBone (dNewtonBody* const bone, const dFloat* cons
 
 
 
-OgreNewtonDynamicBody* ForkliftPhysicsModel::CreateRootBody (SceneNode* const node, const Vector3& origin)
+newtonDynamicBody* ForkliftPhysicsModel::CreateRootBody (SceneNode* const node, const Vector3& origin)
 {
 	Entity* const ent = (Entity*) node->getAttachedObject (0);
 	Vector3 scale (node->getScale());
@@ -379,7 +398,7 @@ OgreNewtonDynamicBody* ForkliftPhysicsModel::CreateRootBody (SceneNode* const no
 	dNewtonCollisionConvexHull bodyCollision (m_application->GetPhysics(), bodyMesh, m_allExcludingMousePick);
 	Matrix4 bodyMatrix;
 	bodyMatrix.makeTransform (node->_getDerivedPosition() + origin, Vector3 (1.0f, 1.0f, 1.0f), node->_getDerivedOrientation());
-	OgreNewtonDynamicBody* const body = new OgreNewtonDynamicBody (m_application->GetPhysics(), BODY_MASS, &bodyCollision, node, bodyMatrix);
+	newtonDynamicBody* const body = new newtonDynamicBody (m_application->GetPhysics(), BODY_MASS, &bodyCollision, node, bodyMatrix);
 
 	// move the center of mass a little to the back	of the chassis
 	Vector3 com;
@@ -392,13 +411,13 @@ OgreNewtonDynamicBody* ForkliftPhysicsModel::CreateRootBody (SceneNode* const no
 }
 
 
-OgreNewtonDynamicBody* ForkliftPhysicsModel::CreateTireBody (SceneNode* const tireNode, const Vector3& origin)
+newtonDynamicBody* ForkliftPhysicsModel::CreateTireBody (SceneNode* const tireNode, const Vector3& origin)
 {
 	Entity* const ent = (Entity*) tireNode->getAttachedObject (0);
 	Vector3 scale (tireNode->getScale());
 	AxisAlignedBox box (ent->getBoundingBox());
-	Real height = scale.z * (box.getMaximum().z - box.getMinimum().z);
-	Real radius = scale.x * (box.getMaximum().x - box.getMinimum().x) * 0.5f - height * 0.5f;
+	dFloat height = scale.z * (box.getMaximum().z - box.getMinimum().z);
+	dFloat radius = scale.x * (box.getMaximum().x - box.getMinimum().x) * 0.5f - height * 0.5f;
 	dNewtonCollisionChamferedCylinder shape (m_application->GetPhysics(), radius, height, m_allExcludingMousePick);
 
 	Matrix4 aligmentMatrix (Quaternion (Radian (3.141592f * 0.5f), Vector3 (0.0f, 1.0f, 0.0f)));
@@ -410,7 +429,7 @@ OgreNewtonDynamicBody* ForkliftPhysicsModel::CreateTireBody (SceneNode* const ti
 	return new ForkliftTireBody (m_application->GetPhysics(), TIRE_MASS, &shape, tireNode, matrix, m_rootBody);
 }
 
-OgreNewtonDynamicBody* ForkliftPhysicsModel::CreateBasePlatform (SceneNode* const baseNode, const Vector3& origin)
+newtonDynamicBody* ForkliftPhysicsModel::CreateBasePlatform (SceneNode* const baseNode, const Vector3& origin)
 {
 	Entity* const ent = (Entity*) baseNode->getAttachedObject (0);
 	Vector3 scale (baseNode->getScale());
@@ -420,11 +439,11 @@ OgreNewtonDynamicBody* ForkliftPhysicsModel::CreateBasePlatform (SceneNode* cons
 
 	Matrix4 matrix;
 	matrix.makeTransform(baseNode->_getDerivedPosition() + origin, Vector3 (1.0f, 1.0f, 1.0f), baseNode->_getDerivedOrientation());
-	return new OgreNewtonDynamicBody (m_application->GetPhysics(), RACK_MASS, &collision, baseNode, matrix);
+	return new newtonDynamicBody (m_application->GetPhysics(), RACK_MASS, &collision, baseNode, matrix);
 }
 
 
-OgreNewtonDynamicBody* ForkliftPhysicsModel::CreateTooth (SceneNode* const baseNode, const Vector3& origin)
+newtonDynamicBody* ForkliftPhysicsModel::CreateTooth (SceneNode* const baseNode, const Vector3& origin)
 {
 	Entity* const ent = (Entity*) baseNode->getAttachedObject (0);
 	Vector3 scale (baseNode->getScale());
@@ -437,10 +456,10 @@ OgreNewtonDynamicBody* ForkliftPhysicsModel::CreateTooth (SceneNode* const baseN
 
 	Matrix4 matrix;
 	matrix.makeTransform(baseNode->_getDerivedPosition() + origin, Vector3 (1.0f, 1.0f, 1.0f), baseNode->_getDerivedOrientation());
-	return new OgreNewtonDynamicBody (m_application->GetPhysics(), TOOTH_MASS, &compoundShape, baseNode, matrix);
+	return new newtonDynamicBody (m_application->GetPhysics(), TOOTH_MASS, &compoundShape, baseNode, matrix);
 }
 
-dNewtonHingeJoint* ForkliftPhysicsModel::LinkFrontTire (OgreNewtonDynamicBody* const tire)  
+dNewtonHingeJoint* ForkliftPhysicsModel::LinkFrontTire (newtonDynamicBody* const tire)  
 {
 	Matrix4 tireMatrix(tire->GetMatrix());
 	Matrix4 axisMatrix(m_rootBody->GetMatrix());
@@ -452,7 +471,7 @@ dNewtonHingeJoint* ForkliftPhysicsModel::LinkFrontTire (OgreNewtonDynamicBody* c
 }
 
 
-dNewtonUniversalActuator* ForkliftPhysicsModel::LinkRearTire (OgreNewtonDynamicBody* const tire)  
+dNewtonUniversalActuator* ForkliftPhysicsModel::LinkRearTire (newtonDynamicBody* const tire)  
 {
 	Matrix4 tireMatrix;
 	Matrix4 matrixOffset;
@@ -470,7 +489,7 @@ dNewtonUniversalActuator* ForkliftPhysicsModel::LinkRearTire (OgreNewtonDynamicB
 }
 
 
-dNewtonHingeActuator* ForkliftPhysicsModel::LinkBasePlatform (OgreNewtonDynamicBody* const platform)  
+dNewtonHingeActuator* ForkliftPhysicsModel::LinkBasePlatform (newtonDynamicBody* const platform)  
 {
 	Matrix4 aligmentMatrix (Quaternion (Radian (3.141592f * 0.5f), Vector3 (0.0f, 1.0f, 0.0f)));
 	Matrix4 baseMatrix((platform->GetMatrix() * aligmentMatrix).transpose());
@@ -481,7 +500,7 @@ dNewtonHingeActuator* ForkliftPhysicsModel::LinkBasePlatform (OgreNewtonDynamicB
 	return new dNewtonHingeActuator (&baseMatrix[0][0], angularRate, minAngleLimit, maxAngleLimit, platform, m_rootBody);
 }
 
-dNewtonSliderActuator* ForkliftPhysicsModel::LinkBasePlatform (OgreNewtonDynamicBody* const parent, OgreNewtonDynamicBody* const platform)
+dNewtonSliderActuator* ForkliftPhysicsModel::LinkBasePlatform (newtonDynamicBody* const parent, newtonDynamicBody* const platform)
 {
 	Matrix4 aligmentMatrix (Quaternion (Radian (3.141592f * 0.5f), Vector3 (0.0f, 0.0f, 1.0f)));
 	Matrix4 baseMatrix((platform->GetMatrix() * aligmentMatrix).transpose());
@@ -489,14 +508,14 @@ dNewtonSliderActuator* ForkliftPhysicsModel::LinkBasePlatform (OgreNewtonDynamic
 }
 
 
-dNewtonSliderActuator* ForkliftPhysicsModel::LinkTooth(OgreNewtonDynamicBody* const parent, OgreNewtonDynamicBody* const child, Real dir)
+dNewtonSliderActuator* ForkliftPhysicsModel::LinkTooth(newtonDynamicBody* const parent, newtonDynamicBody* const child, dFloat dir)
 {
 	Matrix4 aligmentMatrix (Quaternion (Radian (dir * 3.141592f * 0.5f), Vector3 (0.0f, 1.0f, 0.0f)));
 	Matrix4 baseMatrix((child->GetMatrix() * aligmentMatrix).transpose());
 	return new dNewtonSliderActuator (&baseMatrix[0][0], 0.25f, -0.25f, 0.25f, child, parent);
 }
 
-void ForkliftPhysicsModel::CalculateEngine(OgreNewtonDynamicBody* const tire)
+void ForkliftPhysicsModel::CalculateEngine(newtonDynamicBody* const tire)
 {
 	// calculate the maximum torque that the engine will produce
 	dNewtonCollision* const tireShape = tire->GetCollision();
@@ -507,21 +526,21 @@ void ForkliftPhysicsModel::CalculateEngine(OgreNewtonDynamicBody* const tire)
 	Matrix4 matrix (Matrix4::IDENTITY);
 	tireShape->CalculateAABB (&matrix[0][0], &p0.x, &p1.x);
 
-	Real Ixx;
-	Real Iyy;
-	Real Izz;
-	Real mass;
+	dFloat Ixx;
+	dFloat Iyy;
+	dFloat Izz;
+	dFloat mass;
 	m_rootBody->GetMassAndInertia (mass, Ixx, Iyy, Izz);
 
 	const Vector3& gravity = m_application->GetPhysics()->GetGravity();
 
-	Real radius = (p1.y - p0.y) * 0.5f;
+	dFloat radius = (p1.y - p0.y) * 0.5f;
 
 	// calculate a torque the will produce a 0.5f of the force of gravity
 	m_maxEngineTorque = 0.25f * mass * radius * gravity.length();
 
 	// calculate the coefficient of drag for top speed of 20 m/s
-	Real maxOmega = 200.0f / radius;
+	dFloat maxOmega = 200.0f / radius;
 	m_omegaResistance = 1.0f / maxOmega;
 }
 
@@ -542,7 +561,7 @@ void ForkliftPhysicsModel::OnPreUpdate (dFloat timestep)
 {
 /*
 	// apply steering control
-	Real steeringAngle = m_rearTire[0]->GetActuatorAngle1();
+	dFloat steeringAngle = m_rearTire[0]->GetActuatorAngle1();
 	if (m_inputRecored.m_steering < 0) {
 		steeringAngle = m_rearTire[0]->GetMinAngularLimit1(); 
 	} else if (m_inputRecored.m_steering > 0) {
@@ -552,8 +571,8 @@ void ForkliftPhysicsModel::OnPreUpdate (dFloat timestep)
 	m_rearTire[1]->SetTargetAngle1(steeringAngle);
 
 	// apply engine torque
-	Real brakeTorque = 0.0f;
-	Real engineTorque = 0.0f;
+	dFloat brakeTorque = 0.0f;
+	dFloat engineTorque = 0.0f;
 	if (m_inputRecored.m_throtler > 0) {
 		engineTorque = -m_maxEngineTorque; 
 	} else if (m_inputRecored.m_throtler < 0) {
@@ -576,15 +595,15 @@ void ForkliftPhysicsModel::OnPreUpdate (dFloat timestep)
 
 	for (int i = 0; i < 2; i ++) {
 		Vector3 omega(m_frontTireBody[i]->GetOmega());
-		Real omegaMag = omega.dotProduct(tirePing);
-		Real sign = (omegaMag >= 0.0f) ? 1.0 : -1.0f;
+		dFloat omegaMag = omega.dotProduct(tirePing);
+		dFloat sign = (omegaMag >= 0.0f) ? 1.0 : -1.0f;
 		omega -= tirePing * (sign * omegaMag * omegaMag * m_omegaResistance);
 		m_frontTireBody[i]->SetOmega(omega);
 	}
 
 
 	// control tilt angle
-	Real tiltAngle = m_tiltAngle;
+	dFloat tiltAngle = m_tiltAngle;
 	if (m_inputRecored.m_tilt > 0) {
 		tiltAngle = m_revolvePlatform->GetMinAngularLimit();
 		m_tiltAngle = m_revolvePlatform->GetActuatorAngle();
@@ -596,7 +615,7 @@ void ForkliftPhysicsModel::OnPreUpdate (dFloat timestep)
 
 
 	// control lift position
-	Real liftPosit= m_liftPosit;
+	dFloat liftPosit= m_liftPosit;
 	if (m_inputRecored.m_lift > 0) {
 		liftPosit = m_slidePlaforms[0]->GetMinPositLimit();
 		m_liftPosit = m_slidePlaforms[0]->GetActuatorPosit();
@@ -609,7 +628,7 @@ void ForkliftPhysicsModel::OnPreUpdate (dFloat timestep)
 	}
 
 	// control teeth position
-	Real toothPosit = m_slideTooth[0]->GetActuatorPosit();
+	dFloat toothPosit = m_slideTooth[0]->GetActuatorPosit();
 	if (m_inputRecored.m_palette > 0) {
 		toothPosit = m_slideTooth[0]->GetMinPositLimit();
 		m_openPosit = m_slideTooth[0]->GetActuatorPosit();
