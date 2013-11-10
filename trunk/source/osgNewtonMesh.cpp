@@ -256,16 +256,26 @@ class newtonMesh::MeshVertexArrayData: public Drawable::ConstAttributeFunctor
 class newtonMesh::TraverseNode: public NodeVisitor 
 {
 	public:
-	TraverseNode(newtonMesh* const me)
+	TraverseNode(newtonMesh* const me, Node* const rootNode)
 		:NodeVisitor (NodeVisitor::TRAVERSE_ALL_CHILDREN)
 		,m_id(0)
+		,m_rootNode(rootNode)
 		,m_mesh(me)
 	{
 	}
 
 	virtual void apply(Geode& node)
 	{
-		dMatrix matrix (computeLocalToWorld(getNodePath()).ptr());
+		const NodePath& path = getNodePath();
+
+//		Matrix matrix;
+//		for (int i = path.size() - 1; (i >= 0) && (path[i] != m_rootNode); i --) {
+//			if (path[i]->asTransform()) {
+//				MatrixTransform* const transformNode = path[i]->asTransform()->asMatrixTransform();
+//				matrix = matrix * transformNode->getMatrix();
+//			}
+//		}
+		Matrix matrix (computeLocalToWorld(getNodePath()));
 
 		int count = node.getNumDrawables();
 		for (int i = 0; i < count; i ++) {
@@ -277,9 +287,8 @@ class newtonMesh::TraverseNode: public NodeVisitor
 		traverse (node);
 	}
 
-	void SubmitFaces(const dMatrix& matrix, const Drawable* const drawable, int faceId)
+	void SubmitFaces(const Matrix& matrix, const Drawable* const drawable, int faceId)
 	{
-
 		MeshPrimitiveIndex indexPrimitive;
 		dAssert (drawable->supports(indexPrimitive));
 		drawable->accept(indexPrimitive);
@@ -287,20 +296,26 @@ class newtonMesh::TraverseNode: public NodeVisitor
 		MeshVertexArrayData data;
 		drawable->accept(data);
 
+		Matrix normalMatrix(matrix);
+		normalMatrix.setTrans(Vec3(0.0f, 0.0f, 0.0f));
+
 		dFloat triangle[3][12];
 		memset (triangle, 0, sizeof (triangle));
 		int triangleCount = indexPrimitive.m_indexList->size() / 3; 
 		for (int j = 0; j < triangleCount; j ++) {
 			for (int i = 0; i < 3; i ++) {
 				int index = indexPrimitive.m_indexList->at(j * 3 + i);
-				triangle[i][0] = data.m_vertices->at(index).x();
-				triangle[i][1] = data.m_vertices->at(index).y();
-				triangle[i][2] = data.m_vertices->at(index).z();
+
+				Vec3 p (data.m_vertices->at(index) * matrix);
+				triangle[i][0] = p.x();
+				triangle[i][1] = p.y();
+				triangle[i][2] = p.z();
 				
 				if (data.m_normals->size() > 0) {
-					triangle[i][4] = data.m_normals->at(index).x();
-					triangle[i][5] = data.m_normals->at(index).y();
-					triangle[i][6] = data.m_normals->at(index).z();
+					Vec3 n (data.m_normals->at(index) * normalMatrix);
+					triangle[i][4] = n.x();
+					triangle[i][5] = n.y();
+					triangle[i][6] = n.z();
 				}
 
 				if (data.m_uv->size() > 0)  {
@@ -313,7 +328,9 @@ class newtonMesh::TraverseNode: public NodeVisitor
 	}
 
 	int m_id;
+	Node* m_rootNode;
 	newtonMesh* m_mesh;
+	
 };
 
 newtonMesh::newtonMesh (dNewton* const world)
@@ -322,13 +339,13 @@ newtonMesh::newtonMesh (dNewton* const world)
 {
 }
 
-newtonMesh::newtonMesh (dNewton* const world, Node* const sceneNode)
+newtonMesh::newtonMesh (dNewton* const world, Node* const node)
 	:dNewtonMesh (world)
 	,m_materialMap()
 {
 	BeginPolygon();
-	TraverseNode traversal(this);
-	sceneNode->accept(traversal);
+	TraverseNode traversal(this, node);
+	node->accept(traversal);
 	EndPolygon();
 }
 
