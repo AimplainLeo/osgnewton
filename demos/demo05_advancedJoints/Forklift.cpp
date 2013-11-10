@@ -40,6 +40,7 @@ class ForkliftPhysicsModel::ARTICULATED_VEHICLE_DEFINITION
 	char m_boneName[32];
 	char m_shapeTypeName[32];
 	dFloat m_mass;
+	dFloat m_algimentAngle;
 	int m_bodyPartID;
 	char m_articulationName[32];
 };
@@ -47,17 +48,17 @@ class ForkliftPhysicsModel::ARTICULATED_VEHICLE_DEFINITION
 
 static ForkliftPhysicsModel::ARTICULATED_VEHICLE_DEFINITION forkliftDefinition[] =
 {
-	{"body",		"convexHull",			900.0f, ForkliftPhysicsModel::ARTICULATED_VEHICLE_DEFINITION::m_bodyPart, "mainBody"},
-	{"fr_tire",		"tireShape",			 50.0f, ForkliftPhysicsModel::ARTICULATED_VEHICLE_DEFINITION::m_tireID, "frontTire"},
-	{"fl_tire",		"tireShape",			 50.0f, ForkliftPhysicsModel::ARTICULATED_VEHICLE_DEFINITION::m_tireID, "frontTire"},
-	{"rr_tire",		"tireShape",			 50.0f, ForkliftPhysicsModel::ARTICULATED_VEHICLE_DEFINITION::m_tireID, "rearTire"},
-	{"rl_tire",		"tireShape",			 50.0f, ForkliftPhysicsModel::ARTICULATED_VEHICLE_DEFINITION::m_tireID, "rearTire"},
-//	{"lift_1",		"convexHull",			 50.0f, ForkliftPhysicsModel::ARTICULATED_VEHICLE_DEFINITION::m_bodyPart, "hingeActuator"},
-//	{"lift_2",		"convexHull",			 40.0f, ForkliftPhysicsModel::ARTICULATED_VEHICLE_DEFINITION::m_bodyPart, "liftActuator"},
-//	{"lift_3",		"convexHull",			 30.0f, ForkliftPhysicsModel::ARTICULATED_VEHICLE_DEFINITION::m_bodyPart, "liftActuator"},
-//	{"lift_4",		"convexHull",			 20.0f, ForkliftPhysicsModel::ARTICULATED_VEHICLE_DEFINITION::m_bodyPart, "liftActuator"},
-//	{"left_teeth",  "convexHullAggregate",	 10.0f, ForkliftPhysicsModel::ARTICULATED_VEHICLE_DEFINITION::m_bodyPart, "paletteActuator"},
-//	{"right_teeth", "convexHullAggregate",	 10.0f, ForkliftPhysicsModel::ARTICULATED_VEHICLE_DEFINITION::m_bodyPart, "paletteActuator"},
+	{"body",		"convexHull",			900.0f,  0.0f, ForkliftPhysicsModel::ARTICULATED_VEHICLE_DEFINITION::m_bodyPart, "mainBody"},
+	{"fr_tire",		"tireShape",			 50.0f, 90.0f, ForkliftPhysicsModel::ARTICULATED_VEHICLE_DEFINITION::m_tireID, "frontTire"},
+	{"fl_tire",		"tireShape",			 50.0f, 90.0f, ForkliftPhysicsModel::ARTICULATED_VEHICLE_DEFINITION::m_tireID, "frontTire"},
+	{"rr_tire",		"tireShape",			 50.0f, 90.0f, ForkliftPhysicsModel::ARTICULATED_VEHICLE_DEFINITION::m_tireID, "rearTire"},
+	{"rl_tire",		"tireShape",			 50.0f, 90.0f, ForkliftPhysicsModel::ARTICULATED_VEHICLE_DEFINITION::m_tireID, "rearTire"},
+//	{"lift_1",		"convexHull",			 50.0f, 90.0f, ForkliftPhysicsModel::ARTICULATED_VEHICLE_DEFINITION::m_bodyPart, "hingeActuator"},
+//	{"lift_2",		"convexHull",			 40.0f, 90.0f, ForkliftPhysicsModel::ARTICULATED_VEHICLE_DEFINITION::m_bodyPart, "liftActuator"},
+//	{"lift_3",		"convexHull",			 30.0f, 90.0f, ForkliftPhysicsModel::ARTICULATED_VEHICLE_DEFINITION::m_bodyPart, "liftActuator"},
+//	{"lift_4",		"convexHull",			 20.0f, 90.0f, ForkliftPhysicsModel::ARTICULATED_VEHICLE_DEFINITION::m_bodyPart, "liftActuator"},
+//	{"left_teeth",  "convexHullAggregate",	 10.0f, 90.0f, ForkliftPhysicsModel::ARTICULATED_VEHICLE_DEFINITION::m_bodyPart, "paletteActuator"},
+//	{"right_teeth", "convexHullAggregate",	 10.0f, 90.0f, ForkliftPhysicsModel::ARTICULATED_VEHICLE_DEFINITION::m_bodyPart, "paletteActuator"},
 };													
 
 
@@ -112,13 +113,6 @@ class ForkliftPhysicsModel::TraverseNode: public NodeVisitor
 		if (definition) {
 			const NodePath& path = getNodePath();
 
-			Matrix matrix;
-			for (int i = path.size() - 1; (i >= 0) && (path[i] != m_currentNode); i --) {
-				if (path[i]->asTransform()) {
-					MatrixTransform* const transformNode = path[i]->asTransform()->asMatrixTransform();
-					matrix = matrix * transformNode->getMatrix();
-				}
-			}
 
 			if (!strcmp (definition->m_shapeTypeName, "tireShape")) {
 				const BoundingBox& box = node.getBoundingBox();
@@ -126,9 +120,19 @@ class ForkliftPhysicsModel::TraverseNode: public NodeVisitor
 				dFloat height = size.y();
 				dFloat radius = size.x() * 0.5f - height * 0.5f;
 				dNewtonCollisionChamferedCylinder wheel (m_world, radius, height, DemoExample::m_allExcludingMousePick);
+
+				Matrix matrix (Quat (90.0f * 3.141592f / 180.0f, Vec3 (0.0f, 0.0f, 1.0f)));
+				wheel.SetMatrix(&dMatrix(matrix.ptr())[0][0]);
 				m_currentBody->SetCollision (&wheel);
 
 			} else if (!strcmp (definition->m_shapeTypeName, "convexHull")) {
+				Matrix matrix;
+				for (int i = path.size() - 1; (i >= 0) && (path[i] != m_currentNode); i --) {
+					if (path[i]->asTransform()) {
+						MatrixTransform* const transformNode = path[i]->asTransform()->asMatrixTransform();
+						matrix = matrix * transformNode->getMatrix();
+					}
+				}
 				newtonMesh convexMesh (m_world, &node);
 				dNewtonCollisionConvexHull convexHull (m_world, convexMesh, DemoExample::m_allExcludingMousePick);
 				dMatrix localMatrix;
