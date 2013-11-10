@@ -200,7 +200,6 @@ void newtonWorld::Update ()
 		if (!body->GetSleepState()) {
 			MatrixTransform* const node = (MatrixTransform*) body->GetUserData();
 			if (node) {
-
 				dMatrix physMatrix;
 				body->GetVisualMatrix (param, &physMatrix[0][0]);
 				Matrix visualMatrix(&physMatrix[0][0]);

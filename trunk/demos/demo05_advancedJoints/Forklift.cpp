@@ -49,9 +49,9 @@ static ForkliftPhysicsModel::ARTICULATED_VEHICLE_DEFINITION forkliftDefinition[]
 {
 	{"body",		"convexHull",			900.0f, ForkliftPhysicsModel::ARTICULATED_VEHICLE_DEFINITION::m_bodyPart, "mainBody"},
 	{"fr_tire",		"tireShape",			 50.0f, ForkliftPhysicsModel::ARTICULATED_VEHICLE_DEFINITION::m_tireID, "frontTire"},
-//	{"fl_tire",		"tireShape",			 50.0f, ForkliftPhysicsModel::ARTICULATED_VEHICLE_DEFINITION::m_tireID, "frontTire"},
-//	{"rr_tire",		"tireShape",			 50.0f, ForkliftPhysicsModel::ARTICULATED_VEHICLE_DEFINITION::m_tireID, "rearTire"},
-//	{"rl_tire",		"tireShape",			 50.0f, ForkliftPhysicsModel::ARTICULATED_VEHICLE_DEFINITION::m_tireID, "rearTire"},
+	{"fl_tire",		"tireShape",			 50.0f, ForkliftPhysicsModel::ARTICULATED_VEHICLE_DEFINITION::m_tireID, "frontTire"},
+	{"rr_tire",		"tireShape",			 50.0f, ForkliftPhysicsModel::ARTICULATED_VEHICLE_DEFINITION::m_tireID, "rearTire"},
+	{"rl_tire",		"tireShape",			 50.0f, ForkliftPhysicsModel::ARTICULATED_VEHICLE_DEFINITION::m_tireID, "rearTire"},
 //	{"lift_1",		"convexHull",			 50.0f, ForkliftPhysicsModel::ARTICULATED_VEHICLE_DEFINITION::m_bodyPart, "hingeActuator"},
 //	{"lift_2",		"convexHull",			 40.0f, ForkliftPhysicsModel::ARTICULATED_VEHICLE_DEFINITION::m_bodyPart, "liftActuator"},
 //	{"lift_3",		"convexHull",			 30.0f, ForkliftPhysicsModel::ARTICULATED_VEHICLE_DEFINITION::m_bodyPart, "liftActuator"},
@@ -530,11 +530,7 @@ void ForkliftPhysicsModel::ApplyInputs(const InputRecored& inputs)
 
 void ForkliftPhysicsModel::OnUpdateBoneTransform (dNewtonBody* const bone, const dFloat* const localMatrix)
 {
-	if (!bone->GetSleepState()) {
-		bone->Update (localMatrix);
-	} else {
-		bone->SetTargetMatrix (localMatrix);
-	}
+	// do nothing for now 
 }
 
 
