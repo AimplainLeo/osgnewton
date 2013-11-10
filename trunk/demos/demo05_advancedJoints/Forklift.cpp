@@ -262,37 +262,24 @@ ForkliftPhysicsModel::ForkliftPhysicsModel (osgViewer::Viewer* const viewer, osg
 	TraverseNode traverse (this, world);
 	rootNode->accept(traverse);
 
-	int stack = 1;
-	void* pool[32];
-	pool[0] = GetBone(0);
-	while (stack) {
-		stack --;
-		void* const bone = pool[stack];
+
+	int boneCount = GetBoneCount();
+	for (int i = 1; i < boneCount; i ++) {
+		void* const bone = GetBone(i);
 		newtonDynamicBody* const body = (newtonDynamicBody*) GetBoneBody (bone);
 		MatrixTransform* const transformNode = (MatrixTransform*)body->GetUserData();
-
-		for (dNewtonBody* child = body->GetChild(); child; child = child->GetSibling()) {
-			pool[stack] = child->GetBoneArticulation();
-			stack ++;
+		if (transformNode->getName() == "fr_tire") {
+			m_frontTire[0] = LinkFrontTire (body);
+		} else if (transformNode->getName() == "fl_tire") {
+			m_frontTire[1] = LinkFrontTire (body);
+		} else if (transformNode->getName() == "rr_tire") {
+			m_rearTire[0] = LinkRearTire (body);
+		} else if (transformNode->getName() == "rl_tire") {
+			m_rearTire[1] = LinkRearTire (body);
 		}
 	}
-
-
-
 /*
 	// find all vehicle components
-	SceneNode* const bodyNode = (SceneNode*) forkliftRoot->getChild (rootName + "body");
-	dAssert (bodyNode);
-
-	SceneNode* const fl_tireNode = (SceneNode*) bodyNode->getChild (rootName + "fl_tire");
-	SceneNode* const fr_tireNode = (SceneNode*) bodyNode->getChild (rootName + "fr_tire");
-	SceneNode* const rl_tireNode = (SceneNode*) bodyNode->getChild (rootName + "rl_tire");
-	SceneNode* const rr_tireNode = (SceneNode*) bodyNode->getChild (rootName + "rr_tire");
-	dAssert (fl_tireNode);
-	dAssert (fr_tireNode);
-	dAssert (rl_tireNode);
-	dAssert (rr_tireNode);
-
 	SceneNode* const base1Node = (SceneNode*) bodyNode->getChild (rootName + "lift_1");
 	SceneNode* const base2Node = (SceneNode*) base1Node->getChild (rootName + "lift_2");
 	SceneNode* const base3Node = (SceneNode*) base2Node->getChild (rootName + "lift_3");
@@ -312,12 +299,6 @@ ForkliftPhysicsModel::ForkliftPhysicsModel (osgViewer::Viewer* const viewer, osg
 	m_rootBody = CreateRootBody (bodyNode, origin);
 	void* const parentBone = AddBone (m_rootBody, &bindMatrix[0][0], NULL);
 
-	// make the tires
-	newtonDynamicBody* const rearLeftTireBody = CreateTireBody (rl_tireNode, origin);
-	newtonDynamicBody* const rearRightTireBody = CreateTireBody (rr_tireNode, origin);
-	m_frontTireBody[0] = CreateTireBody (fl_tireNode, origin);
-	m_frontTireBody[1] = CreateTireBody (fr_tireNode, origin);
-
 	// make the lift base
 	newtonDynamicBody* const base1 = CreateBasePlatform (base1Node, origin);
 	newtonDynamicBody* const base2 = CreateBasePlatform (base2Node, origin);
@@ -327,18 +308,6 @@ ForkliftPhysicsModel::ForkliftPhysicsModel (osgViewer::Viewer* const viewer, osg
 	// make the left and right palette teeth
 	newtonDynamicBody* const leftTooth = CreateTooth (leftTeethNode, origin);
 	newtonDynamicBody* const rightTooth = CreateTooth (rightTeethNode, origin);
-
-	// add the tire as children bodies
-	AddBone (rearLeftTireBody, &bindMatrix[0][0], parentBone);
-	AddBone (rearRightTireBody, &bindMatrix[0][0], parentBone);
-	AddBone (m_frontTireBody[0], &bindMatrix[0][0], parentBone);
-	AddBone (m_frontTireBody[1], &bindMatrix[0][0], parentBone);
-	// connect the tire to the root body 
-	m_rearTire[0] = LinkRearTire (rearLeftTireBody);
-	m_rearTire[1] = LinkRearTire (rearRightTireBody);
-	m_frontTire[0] = LinkFrontTire (m_frontTireBody[0]);
-	m_frontTire[1] = LinkFrontTire (m_frontTireBody[1]);
-
 
 	// add the lifter apparatus bones 
 	void* const base1Bone = AddBone (base1, &bindMatrix[0][0], parentBone);
@@ -367,6 +336,43 @@ ForkliftPhysicsModel::ForkliftPhysicsModel (osgViewer::Viewer* const viewer, osg
 
 ForkliftPhysicsModel::~ForkliftPhysicsModel()
 {
+}
+
+
+dNewtonHingeJoint* ForkliftPhysicsModel::LinkFrontTire (newtonDynamicBody* const tire)  
+{
+	newtonDynamicBody* const parent = (newtonDynamicBody*)tire->GetParent();
+
+	Matrix tireMatrix(tire->GetMatrix());
+	Matrix axisMatrix(parent->GetMatrix());
+	axisMatrix.setTrans(tireMatrix.getTrans());
+
+	dNewtonHingeJoint* const joint = new dNewtonHingeJoint (&dMatrix(axisMatrix.ptr())[0][0], tire, parent);
+	return joint;
+}
+
+
+dNewtonUniversalActuator* ForkliftPhysicsModel::LinkRearTire (newtonDynamicBody* const tire)  
+{
+	newtonDynamicBody* const parent = (newtonDynamicBody*)tire->GetParent();
+
+//	Matrix tireMatrix;
+//	Matrix matrixOffset;
+//	tire->GetCollision()->GetMatrix(&matrixOffset[0][0]);
+//	tireMatrix = (tire->GetMatrix() * matrixOffset.transpose()).transpose();
+	dFloat angleLimit = 30.0f * 3.141592f / 180.0f;
+	dFloat angularRate = 60.0f * 3.141592f / 180.0f;
+//	dNewtonUniversalActuator* const joint = new dNewtonUniversalActuator (&tireMatrix[0][0], angularRate, -angleLimit, angleLimit, angularRate, -angleLimit, angleLimit, tire, m_rootBody);
+
+	Matrix tireMatrix(tire->GetMatrix());
+	Matrix axisMatrix(parent->GetMatrix());
+	axisMatrix.setTrans(tireMatrix.getTrans());
+
+	dNewtonUniversalActuator* const joint = new dNewtonUniversalActuator (&dMatrix(axisMatrix.ptr())[0][0], angularRate, -angleLimit, angleLimit, angularRate, -angleLimit, angleLimit, tire, parent); 
+
+	// disable the limits of the first row, so that it can spin free
+	joint->SetEnableFlag0 (false);
+	return joint;
 }
 
 
@@ -467,24 +473,6 @@ dNewtonHingeJoint* ForkliftPhysicsModel::LinkFrontTire (newtonDynamicBody* const
 	axisMatrix = axisMatrix.transpose();
 	dNewtonHingeJoint* const hinge = new dNewtonHingeJoint (&axisMatrix[0][0], tire, m_rootBody);
 	return hinge;
-}
-
-
-dNewtonUniversalActuator* ForkliftPhysicsModel::LinkRearTire (newtonDynamicBody* const tire)  
-{
-	Matrix4 tireMatrix;
-	Matrix4 matrixOffset;
-
-	tire->GetCollision()->GetMatrix(&matrixOffset[0][0]);
-	tireMatrix = (tire->GetMatrix() * matrixOffset.transpose()).transpose();
-
-	dFloat angleLimit = 30.0f * 3.141592f / 180.0f;
-	dFloat angularRate = 60.0f * 3.141592f / 180.0f;
-	dNewtonUniversalActuator* const joint = new dNewtonUniversalActuator (&tireMatrix[0][0], angularRate, -angleLimit, angleLimit, angularRate, -angleLimit, angleLimit, tire, m_rootBody);
-
-	// disable the limits of the first row, so that it can spin free
-	joint->SetEnableFlag0 (false);
-	return joint;
 }
 
 
