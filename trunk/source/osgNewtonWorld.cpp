@@ -36,7 +36,8 @@ namespace osg
 newtonWorld::newtonWorld (int updateFramerate)
 	:dNewton()
 	,m_materialMap()
-	,m_gravity(0.0f, 0.0f, -9.8f, 0.0f)
+//	,m_gravity(0.0f, 0.0f, -9.8f, 0.0f)
+,m_gravity(0.0f, 0.0f, 0.0f, 0.0f)
 	,m_timestep(0.0f)
 	,m_lastPhysicTimeInMicroseconds(GetTimeInMicrosenconds ())
 	,m_physicUpdateTimestepInMicroseconds(0)
@@ -124,19 +125,16 @@ bool newtonWorld::GetConcurrentUpdateMode () const
 
 bool newtonWorld::OnBodiesAABBOverlap (const dNewtonBody* const body0, const dNewtonBody* const body1, int threadIndex) const
 {
-	dNewtonCollision* const collision0 = body0->GetCollision();
-	dNewtonCollision* const collision1 = body1->GetCollision();
-
-	// check if these two collision shape are part of a hierarchical model
-	void* const node0 = collision0->GetUserData();
-	void* const node1 = collision1->GetUserData();
-	if (node0 && node1) {
+	void* const bone0 = body0->GetBoneArticulation();
+	void* const bone1 = body1->GetBoneArticulation();
+	if (bone0 && bone1) {
 		//both collision are child nodes, check if there are self colliding
-		return GetHierarchyTransformManager()->SelfCollisionTest (node0, node1);
+		return GetHierarchyTransformManager()->SelfCollisionTest (bone0, bone1);
 	}
 
 	// check all other collision using the bitfield mask, 
-	//for now simple return true
+	dNewtonCollision* const collision0 = body0->GetCollision();
+	dNewtonCollision* const collision1 = body1->GetCollision();
 	return (collision0->GetCollisionMask() & collision0->GetCollisionMask()) ? true : false;
 }
 
