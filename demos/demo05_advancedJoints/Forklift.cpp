@@ -48,7 +48,7 @@ class ForkliftPhysicsModel::ARTICULATED_VEHICLE_DEFINITION
 static ForkliftPhysicsModel::ARTICULATED_VEHICLE_DEFINITION forkliftDefinition[] =
 {
 	{"body",		"convexHull",			900.0f, ForkliftPhysicsModel::ARTICULATED_VEHICLE_DEFINITION::m_bodyPart, "mainBody"},
-//	{"fr_tire",		"tireShape",			 50.0f, ForkliftPhysicsModel::ARTICULATED_VEHICLE_DEFINITION::m_tireID, "frontTire"},
+	{"fr_tire",		"tireShape",			 50.0f, ForkliftPhysicsModel::ARTICULATED_VEHICLE_DEFINITION::m_tireID, "frontTire"},
 //	{"fl_tire",		"tireShape",			 50.0f, ForkliftPhysicsModel::ARTICULATED_VEHICLE_DEFINITION::m_tireID, "frontTire"},
 //	{"rr_tire",		"tireShape",			 50.0f, ForkliftPhysicsModel::ARTICULATED_VEHICLE_DEFINITION::m_tireID, "rearTire"},
 //	{"rl_tire",		"tireShape",			 50.0f, ForkliftPhysicsModel::ARTICULATED_VEHICLE_DEFINITION::m_tireID, "rearTire"},
@@ -69,6 +69,7 @@ class ForkliftPhysicsModel::TraverseNode: public NodeVisitor
 		,m_world(world)
 		,m_model (me)
 		,m_parentBone(NULL)
+		,m_parentNode(NULL)
 		,m_currentNode(NULL)
 		,m_currentBody(NULL)
 	{
@@ -80,19 +81,6 @@ class ForkliftPhysicsModel::TraverseNode: public NodeVisitor
 		for (int i = 0; i < count; i ++) {
 			if (!strcmp (forkliftDefinition[i].m_boneName, name)) {
 				return &forkliftDefinition[i];
-/*
-				NewtonBody* const bone = CreateBodyPart (entity, definition[i]);
-
-				// connect this body part to its parent with a vehicle joint
-				ConnectBodyPart (vehicleModel, parentBone->m_body, bone, definition[i].m_articulationName);
-
-				dMatrix bindMatrix (entity->GetParent()->CalculateGlobalMatrix ((DemoEntity*)NewtonBodyGetUserData (parentBone->m_body)).Inverse());
-				parentBone = controller->AddBone (bone, bindMatrix, parentBone);
-
-				// save the controller as the collision user data, for collision culling
-				NewtonCollisionSetUserData (NewtonBodyGetCollision(bone), parentBone);
-				break;
-*/
 			}
 		}
 		return NULL;
@@ -100,56 +88,19 @@ class ForkliftPhysicsModel::TraverseNode: public NodeVisitor
 
 	newtonDynamicBody* CreateBodyPart (Transform* const node, const ForkliftPhysicsModel::ARTICULATED_VEHICLE_DEFINITION* const definition)
 	{
-/*
-		dMatrix matrix (bodyPart->CalculateGlobalMatrix());
-
-		NewtonWorld* const world = GetWorld();
-
-		// create the rigid body that will make this bone
-		NewtonBody* const body = NewtonCreateDynamicBody (world, shape, &matrix[0][0]);
-
-		// destroy the collision helper shape 
-		NewtonDestroyCollision (shape);
-
-		// get the collision from body
-		NewtonCollision* const collision = NewtonBodyGetCollision(body);
-
-		// calculate the moment of inertia and the relative center of mass of the solid
-		NewtonBodySetMassProperties (body, definition.m_mass, collision);
-
-		// save the user data with the bone body (usually the visual geometry)
-		NewtonBodySetUserData(body, bodyPart);
-
-		//NewtonBodySetMaterialGroupID (body, m_material);
-		NewtonCollisionSetUserID(collision, definition.m_bodyPartID);
-
-		// set the bod part force and torque call back to the gravity force, skip the transform callback
-		NewtonBodySetForceAndTorqueCallback (body, PhysicsApplyGravityForce);
-*/
-/*
-		Entity* const ent = (Entity*) node->getAttachedObject (0);
-		Vector3 scale (node->getScale());
-		OgreNewtonMesh bodyMesh (m_application->GetPhysics(), ent);
-		bodyMesh.ApplyTransform (Vector3::ZERO, scale, Quaternion::IDENTITY);
-		dNewtonCollisionConvexHull bodyCollision (m_application->GetPhysics(), bodyMesh, m_allExcludingMousePick);
-		Matrix4 bodyMatrix;
-		bodyMatrix.makeTransform (node->_getDerivedPosition() + origin, Vector3 (1.0f, 1.0f, 1.0f), node->_getDerivedOrientation());
-		OgreNewtonDynamicBody* const body = new OgreNewtonDynamicBody (m_application->GetPhysics(), BODY_MASS, &bodyCollision, node, bodyMatrix);
-
-		// move the center of mass a little to the back	of the chassis
-		Vector3 com;
-		body->GetCenterOfMass (&com.x);
-		com.z += 0.5f;
-		com.y -= 0.2f;
-		body->SetCenterOfMass (&com.x);
-*/
-
 		dAssert (node->asMatrixTransform());
 		const NodePath& path = getNodePath();
 		Matrix matrix (computeLocalToWorld(path));
 
 		dNewtonCollisionNull placeHolderShape(m_world);
 		newtonDynamicBody* const body = new newtonDynamicBody (m_world, definition->m_mass, &placeHolderShape, node->asMatrixTransform(), matrix);
+
+		// move the center of mass a little to the back	of the chassis
+		//Vector3 com;
+		//body->GetCenterOfMass (&com.x);
+		//com.z += 0.5f;
+		//com.y -= 0.2f;
+		//body->SetCenterOfMass (&com.x);
 
 		return body;
 	}
@@ -169,12 +120,16 @@ class ForkliftPhysicsModel::TraverseNode: public NodeVisitor
 				}
 			}
 
-			newtonMesh convexMesh (m_world, &node);
 			if (!strcmp (definition->m_shapeTypeName, "tireShape")) {
-				dAssert (0);
-//				shape = MakeTireShape(bodyPart);
+				const BoundingBox& box = node.getBoundingBox();
+				Vec3 size (box._max - box._min);
+				dFloat height = size.y();
+				dFloat radius = size.x() * 0.5f - height * 0.5f;
+				dNewtonCollisionChamferedCylinder wheel (m_world, radius, height, DemoExample::m_allExcludingMousePick);
+				m_currentBody->SetCollision (&wheel);
+
 			} else if (!strcmp (definition->m_shapeTypeName, "convexHull")) {
-//				shape = MakeConvexHull(bodyPart);
+				newtonMesh convexMesh (m_world, &node);
 				dNewtonCollisionConvexHull convexHull (m_world, convexMesh, DemoExample::m_allExcludingMousePick);
 				dMatrix localMatrix;
 				convexHull.GetMatrix(&localMatrix[0][0]);
@@ -203,20 +158,30 @@ class ForkliftPhysicsModel::TraverseNode: public NodeVisitor
 		const std::string& name = node.getName();
 		ForkliftPhysicsModel::ARTICULATED_VEHICLE_DEFINITION* const definition = FindDefintionRecord (name.c_str());
 		if (definition) {
+			Matrix matrix;
+			if (m_parentNode) {
+				const NodePath& path = getNodePath();
+				for (int i = path.size() - 1; (i >= 0) && (path[i] != m_parentNode); i --) {
+					if (path[i]->asTransform()) {
+						MatrixTransform* const transformNode = path[i]->asTransform()->asMatrixTransform();
+						matrix = matrix * transformNode->getMatrix();
+					}
+				}
+			}
+
 			m_currentNode = node.asMatrixTransform();
 			newtonDynamicBody* const body = CreateBodyPart (&node, definition);
 			m_currentBody = body;
 
-			Matrix matrix;
-			if (m_parentBone) {
-				dAssert(0);
-			}
 			void* const bone = m_model->AddBone (body, &dMatrix (matrix.ptr())[0][0], m_parentBone);
 
 			void* const saveParent = m_parentBone;
+			Transform* const saveParentNode = m_parentNode;
 			m_parentBone = bone;
+			m_parentNode = &node;
 			traverse (node);
 			m_parentBone = saveParent;
+			m_parentNode = saveParentNode;
 		} else {
 			traverse (node);
 		}
@@ -225,6 +190,7 @@ class ForkliftPhysicsModel::TraverseNode: public NodeVisitor
 	newtonWorld* m_world;
 	ForkliftPhysicsModel* m_model;
 	void* m_parentBone;
+	Transform* m_parentNode;
 	MatrixTransform* m_currentNode;
 	newtonDynamicBody* m_currentBody;
 
@@ -372,10 +338,9 @@ ForkliftPhysicsModel::ForkliftPhysicsModel (osgViewer::Viewer* const viewer, osg
 
 	// calculate a fake engine 
 	CalculateEngine (m_frontTireBody[0]);
-
+*/
 	// disable self collision between all body parts
 	DisableAllSelfCollision();
-*/
 }
 
 ForkliftPhysicsModel::~ForkliftPhysicsModel()
@@ -565,13 +530,11 @@ void ForkliftPhysicsModel::ApplyInputs(const InputRecored& inputs)
 
 void ForkliftPhysicsModel::OnUpdateBoneTransform (dNewtonBody* const bone, const dFloat* const localMatrix)
 {
-	dAssert(0);
-/*
-	if (bone->GetSleepState()) {
+	if (!bone->GetSleepState()) {
 		bone->Update (localMatrix);
+	} else {
+		bone->SetTargetMatrix (localMatrix);
 	}
-	bone->SetTargetMatrix (localMatrix);
-*/
 }
 
 

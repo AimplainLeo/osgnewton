@@ -28,7 +28,7 @@ namespace osg
 {
 
 newtonArticulationManager::newtonArticulationManager (newtonWorld* const world)
-	:dNewtonArticulationManager (world)
+	:dNewtonArticulationManager (world, true)
 {
 }
 

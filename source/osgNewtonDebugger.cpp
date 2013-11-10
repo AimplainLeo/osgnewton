@@ -85,7 +85,6 @@ class DebugMeshDrawble: public Drawable
 
 	virtual void drawImplementation(RenderInfo& renderInfo) const
 	{
-
 		DebuggerCollisionMeshBuilder meshBuider (m_collision);
 
 		glDisable (GL_LIGHTING);
@@ -141,9 +140,7 @@ class newtonDebugger::UpdateCallback: public NodeCallback
 		for (unsigned int i = 0; i < chidrenCount; i ++) {
 			dMatrix matrix;
 			DebugTransformNode* const child = static_cast <DebugTransformNode*> (rootNode->getChild(i));
-
-			//child->m_body->GetMatrix(&matrix[0][0]);
-			child->m_body->GetTargetMatrix (&matrix[0][0]);
+			child->m_body->GetMatrix (&matrix[0][0]);
 			Matrix visualMatrix(&matrix[0][0]);
 			child->setMatrix (visualMatrix);
 		}
