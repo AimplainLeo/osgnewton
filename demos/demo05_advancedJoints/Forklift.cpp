@@ -162,9 +162,11 @@ class ForkliftPhysicsModel::TraverseNode: public NodeVisitor
 			const NodePath& path = getNodePath();
 
 			Matrix matrix;
-			for (int i = path.size() - 2; (i >= 0) && (path[i] != m_currentNode); i --) {
-				MatrixTransform* const transformNode = path[i]->asTransform()->asMatrixTransform();
-				matrix = matrix * transformNode->getMatrix();
+			for (int i = path.size() - 1; (i >= 0) && (path[i] != m_currentNode); i --) {
+				if (path[i]->asTransform()) {
+					MatrixTransform* const transformNode = path[i]->asTransform()->asMatrixTransform();
+					matrix = matrix * transformNode->getMatrix();
+				}
 			}
 
 			newtonMesh convexMesh (m_world, &node);
@@ -174,10 +176,11 @@ class ForkliftPhysicsModel::TraverseNode: public NodeVisitor
 			} else if (!strcmp (definition->m_shapeTypeName, "convexHull")) {
 //				shape = MakeConvexHull(bodyPart);
 				dNewtonCollisionConvexHull convexHull (m_world, convexMesh, DemoExample::m_allExcludingMousePick);
+				dMatrix localMatrix;
+				convexHull.GetMatrix(&localMatrix[0][0]);
+				matrix = Matrix (&localMatrix[0][0]) * matrix;
 				convexHull.SetMatrix(&dMatrix(matrix.ptr())[0][0]);
 				m_currentBody->SetCollision (&convexHull);
-		
-
 			} else if (!strcmp (definition->m_shapeTypeName, "convexHullAggregate")) {
 				dAssert (0);
 //				shape = MakeConvexHullAggregate(bodyPart);
@@ -200,7 +203,7 @@ class ForkliftPhysicsModel::TraverseNode: public NodeVisitor
 		const std::string& name = node.getName();
 		ForkliftPhysicsModel::ARTICULATED_VEHICLE_DEFINITION* const definition = FindDefintionRecord (name.c_str());
 		if (definition) {
-			m_currentNode = &node;
+			m_currentNode = node.asMatrixTransform();
 			newtonDynamicBody* const body = CreateBodyPart (&node, definition);
 			m_currentBody = body;
 
@@ -222,7 +225,7 @@ class ForkliftPhysicsModel::TraverseNode: public NodeVisitor
 	newtonWorld* m_world;
 	ForkliftPhysicsModel* m_model;
 	void* m_parentBone;
-	Node* m_currentNode;
+	MatrixTransform* m_currentNode;
 	newtonDynamicBody* m_currentBody;
 
 };
@@ -272,15 +275,14 @@ ForkliftPhysicsModel::ForkliftPhysicsModel (osgViewer::Viewer* const viewer, osg
 	Group* const rootGroup = viewer->getSceneData()->asGroup();
 	dAssert (rootGroup);
 
+	// load the mesh
+	ref_ptr<Node> vehicleNode = osgDB::readNodeFile(fileName);
+	osg::Node* const rootNode = FindNodeByName (std::string (forkliftDefinition[0].m_boneName), vehicleNode.get());
+	dAssert (rootNode);
+
 	// place vehicle in the scene
 	Matrix matrix;
 	matrix.setTrans(origin);
-
-	// load the mesh
-	ref_ptr<Node> vehicleNode = osgDB::readNodeFile(fileName);
-
-	osg::Node* const rootNode = FindNodeByName (std::string (forkliftDefinition[0].m_boneName), vehicleNode.get());
-	dAssert (rootNode);
 	rootNode->asTransform()->asMatrixTransform()->setMatrix(matrix);
 
 	// add the node to the scene root node
