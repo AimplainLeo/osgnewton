@@ -56,7 +56,7 @@ static newtonDynamicBody* CreateBox (osgViewer::Viewer* const viewer, osg::newto
 
 	// make a osg transform node
 	Matrix matrix;
-	matrix.setTrans (location + Vec3 (0.0f, 20.0f, 0.0f));
+	matrix.setTrans (location);
 	ref_ptr<MatrixTransform> transformNode = new MatrixTransform(matrix);	
 	rootGroup->addChild(transformNode.get());
 
@@ -96,7 +96,7 @@ static newtonDynamicBody* CreateCylinder (osgViewer::Viewer* const viewer, osg::
 
     // make a osg transform node
     Matrix matrix;
-    matrix.setTrans (location + Vec3 (0.0f, 20.0f, 0.0f));
+    matrix.setTrans (location);
     ref_ptr<MatrixTransform> transformNode = new MatrixTransform(matrix);	
     rootGroup->addChild(transformNode.get());
 
@@ -137,7 +137,7 @@ static newtonDynamicBody* CreateWheel (osgViewer::Viewer* const viewer, osg::new
 
     // make a osg transform node
     Matrix matrix;
-    matrix.setTrans (location + Vec3 (0.0f, 20.0f, 0.0f));
+    matrix.setTrans (location);
     ref_ptr<MatrixTransform> transformNode = new MatrixTransform(matrix);	
     rootGroup->addChild(transformNode.get());
 
