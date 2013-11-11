@@ -69,12 +69,12 @@ class ForkliftPhysicsModel::ForkliftTireBody: public newtonDynamicBody
 		Matrix4 tireMatrix (GetMatrix());
 		Matrix4 chassis (m_rootBody->GetMatrix());
 
-		chassis.setTrans (Vector3 (0.0f, 0.0f, 0.0f));
-		tireMatrix.setTrans (Vector3 (0.0f, 0.0f, 0.0f));
-		Vector3 upPin (chassis * Vector3 (0.0f, 1.0f, 0.0f));
-		Vector3 axisPin (chassis * Vector3 (1.0f, 0.0f, 0.0f));
+		chassis.setTrans (Vec3 (0.0f, 0.0f, 0.0f));
+		tireMatrix.setTrans (Vec3 (0.0f, 0.0f, 0.0f));
+		Vec3 upPin (chassis * Vec3 (0.0f, 1.0f, 0.0f));
+		Vec3 axisPin (chassis * Vec3 (1.0f, 0.0f, 0.0f));
 
-		Vector3 dir (axisPin.crossProduct (upPin));
+		Vec3 dir (axisPin.crossProduct (upPin));
 		for (void* contact = contactMaterial->GetFirstContact(); contact; contact = contactMaterial->GetNextContact(contact)) {
 			contactMaterial->RotateTangentDirections (contact, &dir.x);
 		}
@@ -124,7 +124,7 @@ class ForkliftPhysicsModel::TraverseNode: public NodeVisitor
 		}
 
 		// move the center of mass a little to the back	of the chassis
-		//Vector3 com;
+		//Vec3 com;
 		//body->GetCenterOfMass (&com.x);
 		//com.z += 0.5f;
 		//com.y -= 0.2f;
@@ -226,12 +226,14 @@ class ForkliftPhysicsModel::TraverseNode: public NodeVisitor
 };
 
 
-ForkliftPhysicsModel::ForkliftPhysicsModel (osgViewer::Viewer* const viewer, osg::newtonWorld* const world, const char* const fileName, const Vec3& origin)
+ForkliftPhysicsModel::ForkliftPhysicsModel (osgViewer::Viewer* const viewer, newtonWorld* const world, const char* const fileName, const Vec3& origin)
 	:newtonArticulationManager::articulatedTransformController (world->GetHierarchyTransformManager(), true)
 //	,m_application(application)
 //	,m_liftPosit(0.0f)
 //	,m_openPosit(0.0f)
 //	,m_tiltAngle(0.0f)
+    ,m_maxEngineTorque(0.0f)
+    ,m_omegaResistance(0.0f)
 {
 	dAssert (viewer->getSceneData());
 	Group* const rootGroup = viewer->getSceneData()->asGroup();
@@ -314,10 +316,10 @@ ForkliftPhysicsModel::ForkliftPhysicsModel (osgViewer::Viewer* const viewer, osg
 	// connect the teeth
 	m_slideTooth[0] = LinkTooth (base4, leftTooth, 1.0f);
 	m_slideTooth[1] = LinkTooth (base4, rightTooth, -1.0f);
-
-	// calculate a fake engine 
-	CalculateEngine (m_frontTireBody[0]);
 */
+	// calculate a fake engine 
+	CalculateEngine ((newtonDynamicBody*)m_frontTire[0]->GetBody0());
+
 	// disable self collision between all body parts
 	DisableAllSelfCollision();
 }
@@ -358,7 +360,7 @@ dNewtonUniversalActuator* ForkliftPhysicsModel::LinkRearTire (newtonDynamicBody*
 
 dNewtonHingeActuator* ForkliftPhysicsModel::LinkBasePlatform (newtonDynamicBody* const platform)  
 {
-//	Matrix aligmentMatrix (Quaternion (Radian (3.141592f * 0.5f), Vector3 (0.0f, 1.0f, 0.0f)));
+//	Matrix aligmentMatrix (Quaternion (Radian (3.141592f * 0.5f), Vec3 (0.0f, 1.0f, 0.0f)));
 //	Matrix baseMatrix((platform->GetMatrix() * aligmentMatrix).transpose());
 
 	newtonDynamicBody* const parent = (newtonDynamicBody*)platform->GetParent();
@@ -377,46 +379,49 @@ dNewtonHingeActuator* ForkliftPhysicsModel::LinkBasePlatform (newtonDynamicBody*
 /*
 dNewtonSliderActuator* ForkliftPhysicsModel::LinkTooth(newtonDynamicBody* const parent, newtonDynamicBody* const child, dFloat dir)
 {
-	Matrix4 aligmentMatrix (Quaternion (Radian (dir * 3.141592f * 0.5f), Vector3 (0.0f, 1.0f, 0.0f)));
+	Matrix4 aligmentMatrix (Quaternion (Radian (dir * 3.141592f * 0.5f), Vec3 (0.0f, 1.0f, 0.0f)));
 	Matrix4 baseMatrix((child->GetMatrix() * aligmentMatrix).transpose());
 	return new dNewtonSliderActuator (&baseMatrix[0][0], 0.25f, -0.25f, 0.25f, child, parent);
 }
-
-void ForkliftPhysicsModel::CalculateEngine(newtonDynamicBody* const tire)
-{
-	// calculate the maximum torque that the engine will produce
-	dNewtonCollision* const tireShape = tire->GetCollision();
-	dAssert (tireShape->GetType() == dNewtonCollision::m_chamferedCylinder);
-
-	Vector3 p0;
-	Vector3 p1;
-	Matrix4 matrix (Matrix4::IDENTITY);
-	tireShape->CalculateAABB (&matrix[0][0], &p0.x, &p1.x);
-
-	dFloat Ixx;
-	dFloat Iyy;
-	dFloat Izz;
-	dFloat mass;
-	m_rootBody->GetMassAndInertia (mass, Ixx, Iyy, Izz);
-
-	const Vector3& gravity = m_application->GetPhysics()->GetGravity();
-
-	dFloat radius = (p1.y - p0.y) * 0.5f;
-
-	// calculate a torque the will produce a 0.5f of the force of gravity
-	m_maxEngineTorque = 0.25f * mass * radius * gravity.length();
-
-	// calculate the coefficient of drag for top speed of 20 m/s
-	dFloat maxOmega = 200.0f / radius;
-	m_omegaResistance = 1.0f / maxOmega;
-}
-
 
 void ForkliftPhysicsModel::ApplyInputs(const InputRecored& inputs)
 {
 	m_inputRecored = inputs;
 }
 */
+
+void ForkliftPhysicsModel::CalculateEngine(newtonDynamicBody* const tire)
+{
+    // calculate the maximum torque that the engine will produce
+    dNewtonCollision* const tireShape = tire->GetCollision();
+    newtonDynamicBody* const rootBody = (newtonDynamicBody*)tire->GetParent();
+    newtonWorld* const world = (newtonWorld*) rootBody->GetNewton();
+
+    dAssert (tireShape->GetType() == dNewtonCollision::m_chamferedCylinder);
+
+    Vec3 p0;
+    Vec3 p1;
+    Matrix matrix;
+    tireShape->CalculateAABB (&dMatrix(matrix.ptr())[0][0], &p0.x(), &p1.x());
+
+    dFloat Ixx;
+    dFloat Iyy;
+    dFloat Izz;
+    dFloat mass;
+    rootBody->GetMassAndInertia (mass, Ixx, Iyy, Izz);
+
+    const Vec4 gravity (world->GetGravity());
+
+    dFloat radius = (p1.z() - p0.z()) * 0.5f;
+
+    // calculate a torque the will produce a 0.5f of the force of gravity
+    m_maxEngineTorque = 0.25f * mass * radius * gravity.length();
+
+    // calculate the coefficient of drag for top speed of 20 m/s
+    dFloat maxOmega = 200.0f / radius;
+    m_omegaResistance = 1.0f / maxOmega;
+}
+
 
 void ForkliftPhysicsModel::OnUpdateBoneTransform (dNewtonBody* const bone, const dFloat* const localMatrix)
 {
@@ -451,17 +456,17 @@ void ForkliftPhysicsModel::OnPreUpdate (dFloat timestep)
 	m_frontTire[1]->SetFriction(brakeTorque);
 
 	Matrix4 matrix(m_rootBody->GetMatrix());
-	matrix.setTrans(Vector3::ZERO);
+	matrix.setTrans(Vec3::ZERO);
 
-	Vector3 tirePing (matrix * Vector3(1.0f, 0.0f, 0.0f));
+	Vec3 tirePing (matrix * Vec3(1.0f, 0.0f, 0.0f));
 	if (engineTorque != 0.0f) {
-		Vector3 torque (tirePing * engineTorque);
+		Vec3 torque (tirePing * engineTorque);
 		m_frontTireBody[0]->AddTorque (torque);
 		m_frontTireBody[1]->AddTorque (torque);
 	}
 
 	for (int i = 0; i < 2; i ++) {
-		Vector3 omega(m_frontTireBody[i]->GetOmega());
+		Vec3 omega(m_frontTireBody[i]->GetOmega());
 		dFloat omegaMag = omega.dotProduct(tirePing);
 		dFloat sign = (omegaMag >= 0.0f) ? 1.0 : -1.0f;
 		omega -= tirePing * (sign * omegaMag * omegaMag * m_omegaResistance);
