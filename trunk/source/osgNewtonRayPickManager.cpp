@@ -174,7 +174,6 @@ void rayPickerManager::PreUpdate(dFloat timestep)
             Vec4 relOmega (omega1 - omega0);
             relOmega = matrix.preMult(relOmega);
             Vec4 angularMomentum (Ixx, Iyy, Izz, 0.0f);
-//          angularMomentum = matrix.RotateVector (angularMomentum.CompProduct(matrix.UnrotateVector(omega1 - omega0)));
             angularMomentum = componentMultiply (relOmega, angularMomentum);
             angularMomentum = matrix.postMult(angularMomentum);
             Vec4 torque (angularMomentum * invTimeStep);
