@@ -65,20 +65,16 @@ class ForkliftPhysicsModel::ForkliftTireBody: public newtonDynamicBody
 
 	virtual void OnContactProcess (dNewtonContactMaterial* const contactMaterial, dFloat timestep, int threadIndex) const
 	{
-/*
-		Matrix4 tireMatrix (GetMatrix());
-		Matrix4 chassis (m_rootBody->GetMatrix());
-
+		Matrix tireMatrix (GetMatrix());
+		Matrix chassis (m_rootBody->GetMatrix());
 		chassis.setTrans (Vec3 (0.0f, 0.0f, 0.0f));
 		tireMatrix.setTrans (Vec3 (0.0f, 0.0f, 0.0f));
-		Vec3 upPin (chassis * Vec3 (0.0f, 1.0f, 0.0f));
+		Vec3 upPin (chassis * Vec3 (0.0f, 0.0f, 1.0f));
 		Vec3 axisPin (chassis * Vec3 (1.0f, 0.0f, 0.0f));
-
-		Vec3 dir (axisPin.crossProduct (upPin));
+		Vec3 dir (axisPin ^ upPin);
 		for (void* contact = contactMaterial->GetFirstContact(); contact; contact = contactMaterial->GetNextContact(contact)) {
-			contactMaterial->RotateTangentDirections (contact, &dir.x);
+			contactMaterial->RotateTangentDirections (contact, dir.ptr());
 		}
-*/
 	}
 	newtonDynamicBody* m_rootBody;
 };
@@ -379,8 +375,8 @@ dNewtonHingeActuator* ForkliftPhysicsModel::LinkBasePlatform (newtonDynamicBody*
 /*
 dNewtonSliderActuator* ForkliftPhysicsModel::LinkTooth(newtonDynamicBody* const parent, newtonDynamicBody* const child, dFloat dir)
 {
-	Matrix4 aligmentMatrix (Quaternion (Radian (dir * 3.141592f * 0.5f), Vec3 (0.0f, 1.0f, 0.0f)));
-	Matrix4 baseMatrix((child->GetMatrix() * aligmentMatrix).transpose());
+	Matrix aligmentMatrix (Quaternion (Radian (dir * 3.141592f * 0.5f), Vec3 (0.0f, 1.0f, 0.0f)));
+	Matrix baseMatrix((child->GetMatrix() * aligmentMatrix).transpose());
 	return new dNewtonSliderActuator (&baseMatrix[0][0], 0.25f, -0.25f, 0.25f, child, parent);
 }
 */
@@ -432,17 +428,6 @@ void ForkliftPhysicsModel::OnUpdateBoneTransform (dNewtonBody* const bone, const
 
 void ForkliftPhysicsModel::OnPreUpdate (dFloat timestep)
 {
-/*
-	// apply steering control
-	dFloat steeringAngle = m_rearTire[0]->GetActuatorAngle1();
-	if (m_inputRecored.m_steering < 0) {
-		steeringAngle = m_rearTire[0]->GetMinAngularLimit1(); 
-	} else if (m_inputRecored.m_steering > 0) {
-		steeringAngle = m_rearTire[0]->GetMaxAngularLimit1(); 
-	}
-	m_rearTire[0]->SetTargetAngle1(steeringAngle);
-	m_rearTire[1]->SetTargetAngle1(steeringAngle);
-
 	// apply engine torque
 	dFloat brakeTorque = 0.0f;
 	dFloat engineTorque = 0.0f;
@@ -456,24 +441,37 @@ void ForkliftPhysicsModel::OnPreUpdate (dFloat timestep)
 	m_frontTire[0]->SetFriction(brakeTorque);
 	m_frontTire[1]->SetFriction(brakeTorque);
 
-	Matrix4 matrix(m_rootBody->GetMatrix());
-	matrix.setTrans(Vec3::ZERO);
+    void* const bone = GetBone(0);
+    newtonDynamicBody* const rootBody = (newtonDynamicBody*) GetBoneBody (bone);
+	Matrix matrix(rootBody->GetMatrix());
+	matrix.setTrans(Vec3(0.0f, 0.0f, 0.0f));
 
 	Vec3 tirePing (matrix * Vec3(1.0f, 0.0f, 0.0f));
 	if (engineTorque != 0.0f) {
-		Vec3 torque (tirePing * engineTorque);
-		m_frontTireBody[0]->AddTorque (torque);
-		m_frontTireBody[1]->AddTorque (torque);
+		Vec4 torque (tirePing * engineTorque, 0.0f);
+        ((newtonDynamicBody*)m_frontTire[0]->GetBody0())->AddTorque (torque);
+		((newtonDynamicBody*)m_frontTire[1]->GetBody0())->AddTorque (torque);
 	}
 
 	for (int i = 0; i < 2; i ++) {
-		Vec3 omega(m_frontTireBody[i]->GetOmega());
-		dFloat omegaMag = omega.dotProduct(tirePing);
+        newtonDynamicBody* const body = (newtonDynamicBody*)m_frontTire[i]->GetBody0();
+		Vec4 omega(body->GetOmega());
+		dFloat omegaMag = omega * tirePing;
 		dFloat sign = (omegaMag >= 0.0f) ? 1.0 : -1.0f;
-		omega -= tirePing * (sign * omegaMag * omegaMag * m_omegaResistance);
-		m_frontTireBody[i]->SetOmega(omega);
+		omega -= Vec4(tirePing * (sign * omegaMag * omegaMag * m_omegaResistance), 0.0f);
+		body->SetOmega(omega);
 	}
 
+/*
+    // apply steering control
+    dFloat steeringAngle = m_rearTire[0]->GetActuatorAngle1();
+    if (m_inputRecored.m_steering < 0) {
+        steeringAngle = m_rearTire[0]->GetMinAngularLimit1(); 
+    } else if (m_inputRecored.m_steering > 0) {
+        steeringAngle = m_rearTire[0]->GetMaxAngularLimit1(); 
+    }
+    m_rearTire[0]->SetTargetAngle1(steeringAngle);
+    m_rearTire[1]->SetTargetAngle1(steeringAngle);
 
 	// control tilt angle
 	dFloat tiltAngle = m_tiltAngle;
