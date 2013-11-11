@@ -153,10 +153,7 @@ void rayPickerManager::PreUpdate(dFloat timestep)
 				body->ApplyImpulseToDesiredPointVeloc (peekPosit, veloc);
 			}
 
-
             // damp angular velocity
-            //NewtonBodyGetOmega (body, &omega1[0]);
-            //NewtonBodyGetVelocity (body, &veloc1[0]);
             Vec4 omega1 (body->GetOmega());
             Vec4 veloc1 (body->GetVeloc());
             omega1 = omega1 * (0.9f);
