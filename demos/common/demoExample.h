@@ -59,6 +59,9 @@ m_allExcludingMousePick = m_all | 256,
 	~DemoExample ();
 	virtual void Update ();
 
+    Matrix GetCameraTransform () const;
+    void SeCameraTransform (const Matrix& matrix);
+
 	void ResetCamera (const Matrix& matrix);
 
 	virtual void LoadStaticScene() {}
@@ -95,5 +98,5 @@ m_allExcludingMousePick = m_all | 256,
 	bool m_mousePickMemory;
 	KeyTrigger m_debugDisplayKey;
 	KeyTrigger m_asyncronousUpdateKey;
-	static Matrix m_oglViewMatrix;
+	static Matrix m_oglViewAlignmentMatrix;
 };

@@ -26,6 +26,9 @@
 #include "LumberYard.h"
 #include "Forklift.h"
 
+#define ARTICULATED_VEHICLE_CAMERA_DISTANCE			10.0f
+#define ARTICULATED_VEHICLE_CAMERA_HIGH_ABOVE_HEAD	2.5f
+
 class PhysicsWorld: public DemoExample
 {
 	public:
@@ -101,8 +104,9 @@ class PhysicsWorld: public DemoExample
 
         // set all of the player inputs
         ForkliftPhysicsModel::InputRecored inputs;
+        inputs.m_throtler = int (m_inputHandler->IsKeyDown(osgGA::GUIEventAdapter::KEY_T)) - int (m_inputHandler->IsKeyDown(osgGA::GUIEventAdapter::KEY_G));
+//        inputs.m_throtler = (m_keyboard->isKeyDown(OIS::KC_W) - m_keyboard->isKeyDown(OIS::KC_S));
 /*
-        inputs.m_throtler = (m_keyboard->isKeyDown(OIS::KC_W) - m_keyboard->isKeyDown(OIS::KC_S));
         inputs.m_steering = (m_keyboard->isKeyDown(OIS::KC_A) - m_keyboard->isKeyDown(OIS::KC_D));
         inputs.m_lift = (m_keyboard->isKeyDown(OIS::KC_Q) - m_keyboard->isKeyDown(OIS::KC_E));
         inputs.m_tilt = (m_keyboard->isKeyDown(OIS::KC_X) - m_keyboard->isKeyDown(OIS::KC_Z));
@@ -125,6 +129,27 @@ class PhysicsWorld: public DemoExample
 */
         playerController->ApplyInputs (inputs);
     }
+
+
+    void OnEndUpdate(dFloat timestepInSecunds)
+    {
+        DemoExample::OnEndUpdate (timestepInSecunds);
+
+        const newtonInputManager::osgPlayerUserDataPair& playerData = GetInputManager()->GetPlayer();
+        newtonDynamicBody* const playerBody = (newtonDynamicBody*)playerData.m_player;
+
+        // reposition the camera origin to point to the player
+        Matrix camMatrix(GetCameraTransform());
+        Matrix playerMatrix(playerBody->GetMatrix());
+
+        camMatrix.setTrans (Vec3 (0.0f, 0.0f, 0.0f));
+        Vec3 frontDir (camMatrix.preMult(Vec3 (0.0f, 1.0f, 0.0f)));
+        Vec3 camOrigin (playerMatrix.preMult (Vec3(0.0f, 0.0f, ARTICULATED_VEHICLE_CAMERA_HIGH_ABOVE_HEAD)));
+//        camOrigin -= frontDir * ARTICULATED_VEHICLE_CAMERA_DISTANCE;
+        camMatrix.setTrans(camOrigin);
+//        SeCameraTransform (camMatrix);
+    }
+
 };
 
 
