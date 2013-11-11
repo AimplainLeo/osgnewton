@@ -63,30 +63,14 @@ class ForkliftPhysicsModel: public newtonArticulationManager::articulatedTransfo
 	dNewtonUniversalActuator* LinkRearTire (newtonDynamicBody* const tire);
 	dNewtonHingeActuator* LinkBasePlatform (newtonDynamicBody* const platform);
 
-    void CalculateEngine (newtonDynamicBody* const tire);
-/*
-	void ApplyInputs(const InputRecored& inputs);
-	virtual void* AddBone (dNewtonBody* const bone, const dFloat* const bindMatrix, void* const parentBodne);
+   	void ApplyInputs(const InputRecored& inputs);
+        void CalculateEngine (newtonDynamicBody* const tire);
 
+//	dNewtonUniversalActuator* LinkRearTire (newtonDynamicBody* const tire);
+//	dNewtonHingeActuator* LinkBasePlatform (newtonDynamicBody* const platform);
+//	dNewtonSliderActuator* LinkBasePlatform (newtonDynamicBody* const parent, newtonDynamicBody* const platform);
+//	dNewtonSliderActuator* LinkTooth(newtonDynamicBody* const parent, newtonDynamicBody* const child, Real dir);
 
-	newtonDynamicBody* CreateRootBody (SceneNode* const node, const Vec3& origin);
-	newtonDynamicBody* CreateTireBody (SceneNode* const tireNode, const Vec3& origin);
-	newtonDynamicBody* CreateBasePlatform (SceneNode* const baseNode, const Vec3& origin);
-	newtonDynamicBody* CreateTooth (SceneNode* const baseNode, const Vec3& origin);
-
-	
-	dNewtonUniversalActuator* LinkRearTire (newtonDynamicBody* const tire);
-	
-
-	dNewtonHingeActuator* LinkBasePlatform (newtonDynamicBody* const platform);
-	dNewtonSliderActuator* LinkBasePlatform (newtonDynamicBody* const parent, newtonDynamicBody* const platform);
-	dNewtonSliderActuator* LinkTooth(newtonDynamicBody* const parent, newtonDynamicBody* const child, Real dir);
-	
-*/
-
-//	DemoApplication* m_application;
-//	newtonDynamicBody* m_rootBody;
-//	newtonDynamicBody* m_frontTireBody[2];
 	dNewtonHingeJoint* m_frontTire[2];
 	dNewtonUniversalActuator* m_rearTire[2];
 	dNewtonHingeActuator* m_revolvePlatform;

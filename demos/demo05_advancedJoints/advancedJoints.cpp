@@ -85,7 +85,46 @@ class PhysicsWorld: public DemoExample
 
 		ForkliftPhysicsModel* const forkLift = new ForkliftPhysicsModel(m_viewer, this, "forklift.osg", Vec3 (raycaster.m_contact.x(), raycaster.m_contact.y(), raycaster.m_contact.z() + 1.0f));
 
+        // set this object as the player
+        newtonDynamicBody* const playerRootBody = (newtonDynamicBody*) forkLift->GetBoneBody (forkLift->GetBone(0));
+        GetInputManager()->SetPlayer (playerRootBody, forkLift);
 	}
+
+    virtual void OnBeginUpdate (dFloat timestepInSecunds)
+    {
+        DemoExample::OnBeginUpdate (timestepInSecunds);
+
+        const newtonInputManager::osgPlayerUserDataPair& playerData = GetInputManager()->GetPlayer();
+
+        newtonDynamicBody* const playerBody = (newtonDynamicBody*)playerData.m_player;
+        ForkliftPhysicsModel* const playerController = (ForkliftPhysicsModel*)playerData.m_userData;
+
+        // set all of the player inputs
+        ForkliftPhysicsModel::InputRecored inputs;
+/*
+        inputs.m_throtler = (m_keyboard->isKeyDown(OIS::KC_W) - m_keyboard->isKeyDown(OIS::KC_S));
+        inputs.m_steering = (m_keyboard->isKeyDown(OIS::KC_A) - m_keyboard->isKeyDown(OIS::KC_D));
+        inputs.m_lift = (m_keyboard->isKeyDown(OIS::KC_Q) - m_keyboard->isKeyDown(OIS::KC_E));
+        inputs.m_tilt = (m_keyboard->isKeyDown(OIS::KC_X) - m_keyboard->isKeyDown(OIS::KC_Z));
+        inputs.m_palette = (m_keyboard->isKeyDown(OIS::KC_F) - m_keyboard->isKeyDown(OIS::KC_G));
+
+
+        // check if there are some vehicle input, if there is, then wakeup the vehicle
+        if (m_keyboard->isKeyDown(OIS::KC_W) || 
+            m_keyboard->isKeyDown(OIS::KC_S) || 
+            m_keyboard->isKeyDown(OIS::KC_A) || 
+            m_keyboard->isKeyDown(OIS::KC_D) ||	
+            m_keyboard->isKeyDown(OIS::KC_F) ||	
+            m_keyboard->isKeyDown(OIS::KC_G) ||	
+            m_keyboard->isKeyDown(OIS::KC_Z) ||	
+            m_keyboard->isKeyDown(OIS::KC_C) ||	
+            m_keyboard->isKeyDown(OIS::KC_Q) ||	
+            m_keyboard->isKeyDown(OIS::KC_E)) {
+                playerBody->SetSleepState(false);
+        }
+*/
+        playerController->ApplyInputs (inputs);
+    }
 };
 
 
