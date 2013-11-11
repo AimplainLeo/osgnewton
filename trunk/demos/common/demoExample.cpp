@@ -28,7 +28,7 @@
 #define FREE_CAMERA_PITCH_SPEED (1.0f * 3.141592f / 180.0f)
  
 
-Matrix DemoExample::m_oglViewMatrix;
+Matrix DemoExample::m_oglViewAlignmentMatrix;
 
 DemoExample::SmoothCamera::SmoothCamera()
 	:dNewtonTransformLerp()
@@ -36,7 +36,7 @@ DemoExample::SmoothCamera::SmoothCamera()
 	,m_cameraPitchAngle(0.0f)
 	,m_cameraTranslation(0.0f, 0.0f, 0.0f)
 {
-	m_oglViewMatrix.makeRotate (90.0f * 3.14159265f / 180.0f, Vec3f (1.0f, 0.0f, 0.0f));
+	m_oglViewAlignmentMatrix.makeRotate (90.0f * 3.14159265f / 180.0f, Vec3f (1.0f, 0.0f, 0.0f));
 }
 
 void DemoExample::SmoothCamera::Move (dFloat deltaTranslation, dFloat deltaStrafe, dFloat pitchAngleStep, dFloat yawAngleStep)
@@ -65,7 +65,7 @@ void DemoExample::SmoothCamera::Reset (const Matrix& matrix)
 	Matrix oglInvet;
 
 	tmp.invert(matrix);
-	oglInvet.invert(m_oglViewMatrix);
+	oglInvet.invert(m_oglViewAlignmentMatrix);
 	tmp = tmp * oglInvet;
 	dMatrix floatMatrix (tmp.ptr());
 
@@ -81,7 +81,7 @@ Matrix DemoExample::SmoothCamera::CalculateIntepolatedMatrix (dFloat param) cons
 	dMatrix tmpMatrix;
 	InterplateMatrix (param, &tmpMatrix[0][0]);
 
-	Matrix matrix (Matrix (&tmpMatrix[0][0]) * m_oglViewMatrix);
+	Matrix matrix (Matrix (&tmpMatrix[0][0]) * m_oglViewAlignmentMatrix);
 	Matrix matrix1;
 	matrix1.invert(matrix);
 	return matrix1;
@@ -140,6 +140,18 @@ DemoExample::~DemoExample ()
 InputEventHandler* DemoExample::GetInputSystem() const
 {
 	return m_inputHandler.get();
+}
+
+Matrix DemoExample::GetCameraTransform () const
+{
+    dMatrix matrix;
+    m_cameraSmoothing.GetTargetMatrix(&matrix[0][0]);
+    return Matrix (&matrix[0][0]);
+}
+
+void DemoExample::SeCameraTransform (const Matrix& matrix)
+{
+    m_cameraSmoothing.SetTargetMatrix(&dMatrix(matrix.ptr())[0][0]);
 }
 
 void DemoExample::ResetCamera (const Matrix& matrix)
