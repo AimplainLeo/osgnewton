@@ -55,8 +55,6 @@ m_allExcludingMousePick = m_all | 256,
 		dVector m_cameraTranslation;
 	};
 
-
-
 	DemoExample (osgViewer::Viewer* const viewer);
 	~DemoExample ();
 	virtual void Update ();

@@ -383,12 +383,13 @@ dNewtonSliderActuator* ForkliftPhysicsModel::LinkTooth(newtonDynamicBody* const 
 	Matrix4 baseMatrix((child->GetMatrix() * aligmentMatrix).transpose());
 	return new dNewtonSliderActuator (&baseMatrix[0][0], 0.25f, -0.25f, 0.25f, child, parent);
 }
+*/
 
 void ForkliftPhysicsModel::ApplyInputs(const InputRecored& inputs)
 {
 	m_inputRecored = inputs;
 }
-*/
+
 
 void ForkliftPhysicsModel::CalculateEngine(newtonDynamicBody* const tire)
 {

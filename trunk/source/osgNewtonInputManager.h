@@ -32,10 +32,10 @@ namespace osg
 	class OSG_NEWTON_API newtonInputManager: public dNewtonInputManager
 	{
 		public:
-		class OgrePlayerUserDataPair
+		class osgPlayerUserDataPair
 		{
 			public:
-			OgrePlayerUserDataPair()
+			osgPlayerUserDataPair()
 				:m_userData(NULL)
 				,m_player(NULL)
 			{
@@ -54,7 +54,7 @@ namespace osg
 			m_playerInfo.m_userData = userData;
 		}
 
-		const OgrePlayerUserDataPair& GetPlayer() const
+		const osgPlayerUserDataPair& GetPlayer() const
 		{
 			return m_playerInfo;
 		}
@@ -63,7 +63,7 @@ namespace osg
 		virtual void OnEndUpdate (dFloat timestepInSecunds);
 
 		newtonWorld* m_world;
-		OgrePlayerUserDataPair m_playerInfo;
+		osgPlayerUserDataPair m_playerInfo;
 	};
 };
 
