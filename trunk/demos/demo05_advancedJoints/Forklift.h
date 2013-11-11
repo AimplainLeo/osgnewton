@@ -61,6 +61,7 @@ class ForkliftPhysicsModel: public newtonArticulationManager::articulatedTransfo
 
 	dNewtonHingeJoint* LinkFrontTire (newtonDynamicBody* const tire);
 	dNewtonUniversalActuator* LinkRearTire (newtonDynamicBody* const tire);
+	dNewtonHingeActuator* LinkBasePlatform (newtonDynamicBody* const platform);
 /*
 	void ApplyInputs(const InputRecored& inputs);
 	virtual void* AddBone (dNewtonBody* const bone, const dFloat* const bindMatrix, void* const parentBodne);
@@ -86,7 +87,7 @@ class ForkliftPhysicsModel: public newtonArticulationManager::articulatedTransfo
 //	newtonDynamicBody* m_frontTireBody[2];
 	dNewtonHingeJoint* m_frontTire[2];
 	dNewtonUniversalActuator* m_rearTire[2];
-//	dNewtonHingeActuator* m_revolvePlatform;
+	dNewtonHingeActuator* m_revolvePlatform;
 //	dNewtonSliderActuator* m_slidePlaforms[3];
 //	dNewtonSliderActuator* m_slideTooth[2];
 //	Real m_liftPosit;
