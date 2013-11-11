@@ -24,8 +24,8 @@
 
 #include "HelpersStdAfx.h"
 
-#ifndef _SPAWN_SINGLE_SHAPE_ARRAY_H_
-#define _SPAWN_SINGLE_SHAPE_ARRAY_H_
+#ifndef _STANDARD_JOINTS_SAMPLES_H_
+#define _STANDARD_JOINTS_SAMPLES_H_
 
 using namespace osg;
 
