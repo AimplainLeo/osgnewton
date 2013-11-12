@@ -49,6 +49,9 @@ m_allExcludingMousePick = m_all | 256,
 
 		Matrix CalculateIntepolatedMatrix (dFloat param) const ;
 
+		Matrix GetCameraTransform () const;
+		void SeCameraTransform (const Matrix& matrix);
+
 		private:
 		dFloat m_cameraYawAngle;
 		dFloat m_cameraPitchAngle;

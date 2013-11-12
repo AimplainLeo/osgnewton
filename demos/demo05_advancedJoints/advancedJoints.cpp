@@ -145,7 +145,7 @@ class PhysicsWorld: public DemoExample
         camMatrix.setTrans (Vec3 (0.0f, 0.0f, 0.0f));
         Vec3 frontDir (camMatrix.preMult(Vec3 (0.0f, 1.0f, 0.0f)));
         Vec3 camOrigin (playerMatrix.preMult (Vec3(0.0f, 0.0f, ARTICULATED_VEHICLE_CAMERA_HIGH_ABOVE_HEAD)));
-//        camOrigin -= frontDir * ARTICULATED_VEHICLE_CAMERA_DISTANCE;
+//      camOrigin -= frontDir * ARTICULATED_VEHICLE_CAMERA_DISTANCE;
         camMatrix.setTrans(camOrigin);
 //        SeCameraTransform (camMatrix);
     }
