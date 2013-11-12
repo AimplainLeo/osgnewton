@@ -101,5 +101,4 @@ m_allExcludingMousePick = m_all | 256,
 	bool m_mousePickMemory;
 	KeyTrigger m_debugDisplayKey;
 	KeyTrigger m_asyncronousUpdateKey;
-	static Matrix m_oglViewAlignmentMatrix;
 };

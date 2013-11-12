@@ -38,11 +38,6 @@ class PhysicsWorld: public DemoExample
 
 		// load the the dynamics physic and visual world
 		LoadDynamicsScene();
-
-
-		// initialize the Camera position after the scene was loaded
-		Camera* const camera = m_viewer->getCamera();
-		ResetCamera (camera->getViewMatrix());
 	}
 
 	~PhysicsWorld()

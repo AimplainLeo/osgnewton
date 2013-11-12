@@ -28,15 +28,12 @@
 #define FREE_CAMERA_PITCH_SPEED (1.0f * 3.141592f / 180.0f)
  
 
-Matrix DemoExample::m_oglViewAlignmentMatrix;
-
 DemoExample::SmoothCamera::SmoothCamera()
 	:dNewtonTransformLerp()
 	,m_cameraYawAngle(0.0f)
 	,m_cameraPitchAngle(0.0f)
 	,m_cameraTranslation(0.0f, 0.0f, 0.0f)
 {
-	m_oglViewAlignmentMatrix.makeRotate (90.0f * 3.14159265f / 180.0f, Vec3f (1.0f, 0.0f, 0.0f));
 }
 
 void DemoExample::SmoothCamera::Move (dFloat deltaTranslation, dFloat deltaStrafe, dFloat pitchAngleStep, dFloat yawAngleStep)
@@ -59,11 +56,9 @@ void DemoExample::SmoothCamera::Move (dFloat deltaTranslation, dFloat deltaStraf
 }
 
 
-void DemoExample::SmoothCamera::Reset (const Matrix& matrix)
+void DemoExample::SmoothCamera::Reset (const Matrix& viewMatrix)
 {
-	Matrix viewMatrix (Matrix::inverse(m_oglViewAlignmentMatrix * matrix));
 	dMatrix floatMatrix (viewMatrix.ptr());
-
 	m_cameraYawAngle = dAtan2(-floatMatrix[0][2], floatMatrix[0][0]);
 	m_cameraPitchAngle = dAtan2(floatMatrix[2][1], floatMatrix[1][1]);
 	m_cameraTranslation = floatMatrix.m_posit;
@@ -75,22 +70,22 @@ Matrix DemoExample::SmoothCamera::GetCameraTransform () const
 {
 	dMatrix tmp;
 	GetTargetMatrix(&tmp[0][0]);
-	Matrix matrix (Matrix::inverse (Matrix (&tmp[0][0]) * m_oglViewAlignmentMatrix));
-	return matrix;
+	return Matrix (&tmp[0][0]);
 }
 
 void DemoExample::SmoothCamera::SeCameraTransform (const Matrix& matrix)
 {
-	Matrix viewMatrix (Matrix::inverse(m_oglViewAlignmentMatrix * matrix));
-    SetTargetMatrix(&dMatrix(viewMatrix.ptr())[0][0]);
+	SetTargetMatrix(&dMatrix(matrix.ptr())[0][0]);
 }
 
 
 Matrix DemoExample::SmoothCamera::CalculateIntepolatedMatrix (dFloat param) const 
 {
+	static Matrix rotation (Quat (-90.0f * 3.14159265f / 180.0f, Vec3f (1.0f, 0.0f, 0.0f)));
+
 	dMatrix tmpMatrix;
 	InterplateMatrix (param, &tmpMatrix[0][0]);
-	return Matrix::inverse(Matrix (&tmpMatrix[0][0]) * m_oglViewAlignmentMatrix);
+	return Matrix::inverse(Matrix (&tmpMatrix[0][0])) * rotation;
 }
 
 DemoExample::DemoExample (osgViewer::Viewer* const viewer)
@@ -136,7 +131,6 @@ DemoExample::DemoExample (osgViewer::Viewer* const viewer)
 	dAssert (rootGroup);
 	rootGroup->addChild(lightSrc.get());
 	rootGroup->getOrCreateStateSet()->setMode(GL_LIGHT1, StateAttribute::ON);
-
 }
 
 DemoExample::~DemoExample ()
@@ -262,8 +256,11 @@ void DemoExample::UpdateFreeCamera ()
 			pitch = FREE_CAMERA_PITCH_SPEED;
 		}
 	}
+
+strafe = 0.0f;
+translation = 0.0f;
 //yaw = 0.0f;
-//pitch = 0.0f;
+pitch = 0.0f;
 
 	m_cameraSmoothing.Move (translation, strafe, pitch, yaw);
 }
