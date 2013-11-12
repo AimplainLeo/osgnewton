@@ -100,7 +100,7 @@ class PhysicsWorld: public DemoExample
 
         // set all of the player inputs
         ForkliftPhysicsModel::InputRecored inputs;
-        inputs.m_throtler = int (m_inputHandler->IsKeyDown(osgGA::GUIEventAdapter::KEY_T)) - int (m_inputHandler->IsKeyDown(osgGA::GUIEventAdapter::KEY_G));
+        inputs.m_throtler = int (m_inputHandler->IsKeyDown(osgGA::GUIEventAdapter::KEY_W)) - int (m_inputHandler->IsKeyDown(osgGA::GUIEventAdapter::KEY_S));
 //        inputs.m_throtler = (m_keyboard->isKeyDown(OIS::KC_W) - m_keyboard->isKeyDown(OIS::KC_S));
 /*
         inputs.m_steering = (m_keyboard->isKeyDown(OIS::KC_A) - m_keyboard->isKeyDown(OIS::KC_D));
@@ -137,36 +137,14 @@ class PhysicsWorld: public DemoExample
 		// reposition the camera origin to point to the player
 		Matrix playerMatrix(playerBody->GetMatrix());
 
-//		Matrix camMatrix(GetCameraTransform());
-//		camMatrix.setTrans (Vec3 (0.0f, 0.0f, 0.0f));
-//		Vec3 frontDir (camMatrix.preMult(Vec3 (0.0f, 1.0f, 0.0f)));
-//		Vec3 camOrigin (playerMatrix.preMult (Vec3(0.0f, 0.0f, ARTICULATED_VEHICLE_CAMERA_HIGH_ABOVE_HEAD)));
-//		camOrigin -= frontDir * ARTICULATED_VEHICLE_CAMERA_DISTANCE;
-//		camMatrix.setTrans(camOrigin);
-//		SeCameraTransform (camMatrix);
-//Matrix playerMatrix___(playerMatrix);
-//playerMatrix___.setTrans (playerMatrix___.getTrans() + Vec3 (0, -15.0f, 2.0f));
-//SeCameraTransform (playerMatrix___);
-
-
-//ResetCamera (playerMatrix___);
-/*
-Camera* const camera = m_viewer->getCamera();
-Matrixd xxx (camera->getViewMatrix());
-camera->setViewMatrixAsLookAt (playerMatrix.getTrans() - Vec3 (0.0f, 5.0f, 0.0f), playerMatrix.getTrans(), Vec3 (0.0f, 0.0f, 1.0f));
-Matrixd xxx1 (camera->getViewMatrix());
-Matrixd xxx2 (camera->getViewMatrix());
-
-Matrixd rotation;
-rotation.makeRotate (-90.0f * 3.14159265f / 180.0f, Vec3f (1.0f, 0.0f, 0.0f));
-Matrixd xxx3;  
-xxx3.setTrans(playerMatrix.getTrans() - Vec3 (0.0f, 5.0f, 0.0f));
-xxx3 = Matrixd::inverse(xxx3);
-xxx3 = xxx3 * rotation;
-camera->setViewMatrix(xxx3);
-*/
+		Matrix camMatrix(GetCameraTransform());
+		camMatrix.setTrans (Vec3 (0.0f, 0.0f, 0.0f));
+		Vec3 frontDir (camMatrix.preMult(Vec3 (0.0f, 1.0f, 0.0f)));
+		Vec3 camOrigin (playerMatrix.preMult (Vec3(0.0f, 0.0f, ARTICULATED_VEHICLE_CAMERA_HIGH_ABOVE_HEAD)));
+        camOrigin -= camMatrix.preMult(Vec3 (0.0f, ARTICULATED_VEHICLE_CAMERA_DISTANCE, 0.0f));
+		camMatrix.setTrans(camOrigin);
+		SeCameraTransform (camMatrix);
     }
-
 };
 
 
