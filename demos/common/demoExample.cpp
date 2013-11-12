@@ -44,13 +44,13 @@ void DemoExample::SmoothCamera::Move (dFloat deltaTranslation, dFloat deltaStraf
 
 	Matrix yawMatrix;
 	Matrix pitchMatrix;
-	yawMatrix.makeRotate (m_cameraYawAngle, Vec3f (0.0f, 1.0f, 0.0f));
+	yawMatrix.makeRotate (m_cameraYawAngle, Vec3f (0.0f, 0.0f, 1.0f));
 	pitchMatrix.makeRotate (m_cameraPitchAngle, Vec3f (1.0f, 0.0f, 0.0f));
 	Matrix matrix (pitchMatrix * yawMatrix);
 	dMatrix tmpMatrix (matrix.ptr());
 
 	m_cameraTranslation += tmpMatrix[0].Scale(deltaStrafe);
-	m_cameraTranslation += tmpMatrix[2].Scale(deltaTranslation);
+	m_cameraTranslation += tmpMatrix[1].Scale(deltaTranslation);
 	tmpMatrix.m_posit = m_cameraTranslation;	
 	Update (&tmpMatrix[0][0]);
 }
@@ -225,11 +225,11 @@ void DemoExample::UpdateFreeCamera ()
 	dFloat translation = 0.0f;
 
 	if (m_inputHandler->IsKeyDown(osgGA::GUIEventAdapter::KEY_W)) {
-		translation = -moveScale;	
+		translation = moveScale;	
 	}
 
 	if (m_inputHandler->IsKeyDown(osgGA::GUIEventAdapter::KEY_S)) {
-		translation = moveScale;	
+		translation = -moveScale;	
 	}
 
 	if (m_inputHandler->IsKeyDown(osgGA::GUIEventAdapter::KEY_A)) {
@@ -257,10 +257,10 @@ void DemoExample::UpdateFreeCamera ()
 		}
 	}
 
-strafe = 0.0f;
-translation = 0.0f;
 //yaw = 0.0f;
-pitch = 0.0f;
+//pitch = 0.0f;
+//strafe = 0.0f;
+//translation = 0.0f;
 
 	m_cameraSmoothing.Move (translation, strafe, pitch, yaw);
 }
