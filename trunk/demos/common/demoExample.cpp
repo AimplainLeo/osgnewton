@@ -61,13 +61,8 @@ void DemoExample::SmoothCamera::Move (dFloat deltaTranslation, dFloat deltaStraf
 
 void DemoExample::SmoothCamera::Reset (const Matrix& matrix)
 {
-	Matrix tmp;
-	Matrix oglInvet;
-
-	tmp.invert(matrix);
-	oglInvet.invert(m_oglViewAlignmentMatrix);
-	tmp = tmp * oglInvet;
-	dMatrix floatMatrix (tmp.ptr());
+	Matrix viewMatrix (Matrix::inverse(m_oglViewAlignmentMatrix * matrix));
+	dMatrix floatMatrix (viewMatrix.ptr());
 
 	m_cameraYawAngle = dAtan2(-floatMatrix[0][2], floatMatrix[0][0]);
 	m_cameraPitchAngle = dAtan2(floatMatrix[2][1], floatMatrix[1][1]);
@@ -76,15 +71,26 @@ void DemoExample::SmoothCamera::Reset (const Matrix& matrix)
 	ResetMatrix (&floatMatrix[0][0]);
 }
 
+Matrix DemoExample::SmoothCamera::GetCameraTransform () const
+{
+	dMatrix tmp;
+	GetTargetMatrix(&tmp[0][0]);
+	Matrix matrix (Matrix::inverse (Matrix (&tmp[0][0]) * m_oglViewAlignmentMatrix));
+	return matrix;
+}
+
+void DemoExample::SmoothCamera::SeCameraTransform (const Matrix& matrix)
+{
+	Matrix viewMatrix (Matrix::inverse(m_oglViewAlignmentMatrix * matrix));
+    SetTargetMatrix(&dMatrix(viewMatrix.ptr())[0][0]);
+}
+
+
 Matrix DemoExample::SmoothCamera::CalculateIntepolatedMatrix (dFloat param) const 
 {
 	dMatrix tmpMatrix;
 	InterplateMatrix (param, &tmpMatrix[0][0]);
-
-	Matrix matrix (Matrix (&tmpMatrix[0][0]) * m_oglViewAlignmentMatrix);
-	Matrix matrix1;
-	matrix1.invert(matrix);
-	return matrix1;
+	return Matrix::inverse(Matrix (&tmpMatrix[0][0]) * m_oglViewAlignmentMatrix);
 }
 
 DemoExample::DemoExample (osgViewer::Viewer* const viewer)
@@ -144,14 +150,12 @@ InputEventHandler* DemoExample::GetInputSystem() const
 
 Matrix DemoExample::GetCameraTransform () const
 {
-    dMatrix matrix;
-    m_cameraSmoothing.GetTargetMatrix(&matrix[0][0]);
-    return Matrix (&matrix[0][0]);
+	return m_cameraSmoothing.GetCameraTransform();
 }
 
 void DemoExample::SeCameraTransform (const Matrix& matrix)
 {
-    m_cameraSmoothing.SetTargetMatrix(&dMatrix(matrix.ptr())[0][0]);
+	m_cameraSmoothing.SeCameraTransform(matrix);
 }
 
 void DemoExample::ResetCamera (const Matrix& matrix)
@@ -258,6 +262,8 @@ void DemoExample::UpdateFreeCamera ()
 			pitch = FREE_CAMERA_PITCH_SPEED;
 		}
 	}
+//yaw = 0.0f;
+//pitch = 0.0f;
 
 	m_cameraSmoothing.Move (translation, strafe, pitch, yaw);
 }
