@@ -40,10 +40,6 @@ class PhysicsWorld: public DemoExample
 
 		// load the the dynamics physic and visual world
 		LoadDynamicsScene();
-
-		// initialize the Camera position after the scene was loaded
-		Camera* const camera = m_viewer->getCamera();
-		ResetCamera (camera->getViewMatrix());
 	}
 
 	~PhysicsWorld()
@@ -133,21 +129,42 @@ class PhysicsWorld: public DemoExample
 
     void OnEndUpdate(dFloat timestepInSecunds)
     {
-        DemoExample::OnEndUpdate (timestepInSecunds);
+		DemoExample::OnEndUpdate (timestepInSecunds);
 
-        const newtonInputManager::osgPlayerUserDataPair& playerData = GetInputManager()->GetPlayer();
-        newtonDynamicBody* const playerBody = (newtonDynamicBody*)playerData.m_player;
+		const newtonInputManager::osgPlayerUserDataPair& playerData = GetInputManager()->GetPlayer();
+		newtonDynamicBody* const playerBody = (newtonDynamicBody*)playerData.m_player;
 
-        // reposition the camera origin to point to the player
-        Matrix camMatrix(GetCameraTransform());
-        Matrix playerMatrix(playerBody->GetMatrix());
+		// reposition the camera origin to point to the player
+		Matrix playerMatrix(playerBody->GetMatrix());
 
-        camMatrix.setTrans (Vec3 (0.0f, 0.0f, 0.0f));
-        Vec3 frontDir (camMatrix.preMult(Vec3 (0.0f, 1.0f, 0.0f)));
-        Vec3 camOrigin (playerMatrix.preMult (Vec3(0.0f, 0.0f, ARTICULATED_VEHICLE_CAMERA_HIGH_ABOVE_HEAD)));
-//      camOrigin -= frontDir * ARTICULATED_VEHICLE_CAMERA_DISTANCE;
-        camMatrix.setTrans(camOrigin);
-//        SeCameraTransform (camMatrix);
+//		Matrix camMatrix(GetCameraTransform());
+//		camMatrix.setTrans (Vec3 (0.0f, 0.0f, 0.0f));
+//		Vec3 frontDir (camMatrix.preMult(Vec3 (0.0f, 1.0f, 0.0f)));
+//		Vec3 camOrigin (playerMatrix.preMult (Vec3(0.0f, 0.0f, ARTICULATED_VEHICLE_CAMERA_HIGH_ABOVE_HEAD)));
+//		camOrigin -= frontDir * ARTICULATED_VEHICLE_CAMERA_DISTANCE;
+//		camMatrix.setTrans(camOrigin);
+//		SeCameraTransform (camMatrix);
+//Matrix playerMatrix___(playerMatrix);
+//playerMatrix___.setTrans (playerMatrix___.getTrans() + Vec3 (0, -15.0f, 2.0f));
+//SeCameraTransform (playerMatrix___);
+
+
+//ResetCamera (playerMatrix___);
+/*
+Camera* const camera = m_viewer->getCamera();
+Matrixd xxx (camera->getViewMatrix());
+camera->setViewMatrixAsLookAt (playerMatrix.getTrans() - Vec3 (0.0f, 5.0f, 0.0f), playerMatrix.getTrans(), Vec3 (0.0f, 0.0f, 1.0f));
+Matrixd xxx1 (camera->getViewMatrix());
+Matrixd xxx2 (camera->getViewMatrix());
+
+Matrixd rotation;
+rotation.makeRotate (-90.0f * 3.14159265f / 180.0f, Vec3f (1.0f, 0.0f, 0.0f));
+Matrixd xxx3;  
+xxx3.setTrans(playerMatrix.getTrans() - Vec3 (0.0f, 5.0f, 0.0f));
+xxx3 = Matrixd::inverse(xxx3);
+xxx3 = xxx3 * rotation;
+camera->setViewMatrix(xxx3);
+*/
     }
 
 };
