@@ -59,23 +59,23 @@ class ForkliftPhysicsModel::ForkliftTireBody: public newtonDynamicBody
 	public:
 	ForkliftTireBody (newtonWorld* const world, dFloat mass, const dNewtonCollision* const collision, MatrixTransform* const node, const Matrix& location)
 		:newtonDynamicBody (world, mass, collision, node, location)
-		,m_rootBody(NULL)
+//		,m_rootBody(NULL)
 	{
 	}
 
 	virtual void OnContactProcess (dNewtonContactMaterial* const contactMaterial, dFloat timestep, int threadIndex) const
 	{
-		//Matrix tireMatrix (GetMatrix());
-		Matrix chassis (m_rootBody->GetMatrix());
-        //Vec3 upPin (Matrix::transform3x3 (chassis, Vec3(0.0f, 0.0f, 1.0f)));
-		//Vec3 axisPin (Matrix::transform3x3 (chassis, Vec3(1.0f, 0.0f, 0.0f)));
-		//Vec3 dir (axisPin ^ upPin);
-        Vec3 dir (Matrix::transform3x3 (chassis, Vec3(0.0f, 1.0f, 0.0f)));
+        newtonDynamicBody* const rootBody = (newtonDynamicBody*)GetParent();
+
+		Matrix tireMatrix (GetMatrix());
+		Matrix chassis (rootBody->GetMatrix());
+        Vec3 upPin (Matrix::transform3x3 (chassis, Vec3(0.0f, 0.0f, 1.0f)));
+		Vec3 axisPin (Matrix::transform3x3 (tireMatrix, Vec3(1.0f, 0.0f, 0.0f)));
+		Vec3 dir (axisPin ^ upPin);
 		for (void* contact = contactMaterial->GetFirstContact(); contact; contact = contactMaterial->GetNextContact(contact)) {
 			contactMaterial->RotateTangentDirections (contact, dir.ptr());
 		}
 	}
-	newtonDynamicBody* m_rootBody;
 };
 
 
@@ -257,16 +257,12 @@ ForkliftPhysicsModel::ForkliftPhysicsModel (osgViewer::Viewer* const viewer, new
 		newtonDynamicBody* const body = (newtonDynamicBody*) GetBoneBody (bone);
 		MatrixTransform* const transformNode = (MatrixTransform*)body->GetUserData();
 		if (transformNode->getName() == "fr_tire") {
-			((ForkliftTireBody*)body)->m_rootBody = (newtonDynamicBody*)body->GetParent();
 			m_frontTire[0] = LinkFrontTire (body);
 		} else if (transformNode->getName() == "fl_tire") {
-			((ForkliftTireBody*)body)->m_rootBody = (newtonDynamicBody*)body->GetParent();
 			m_frontTire[1] = LinkFrontTire (body);
 		} else if (transformNode->getName() == "rr_tire") {
-			((ForkliftTireBody*)body)->m_rootBody = (newtonDynamicBody*)body->GetParent();
 			m_rearTire[0] = LinkRearTire (body);
 		} else if (transformNode->getName() == "rl_tire") {
-			((ForkliftTireBody*)body)->m_rootBody = (newtonDynamicBody*)body->GetParent();
 			m_rearTire[1] = LinkRearTire (body);
 		} else if (transformNode->getName() == "lift_1") {
 			m_revolvePlatform = LinkBasePlatform (body);
@@ -275,13 +271,12 @@ ForkliftPhysicsModel::ForkliftPhysicsModel (osgViewer::Viewer* const viewer, new
 
     // links the two front tire with a relational joint to add as a differential to regulate
     // the angular velocity
-    newtonDynamicBody* const rootBody = (newtonDynamicBody*) GetBoneBody (GetBone(0));
-    newtonDynamicBody* const leftTire = (newtonDynamicBody*) m_frontTire[0]->GetBody0();
-    newtonDynamicBody* const rightTire = (newtonDynamicBody*) m_frontTire[1]->GetBody0();
-//  Vec3 pin0 (rootBody->GetMatrix().preMult(Vec3(1.0f, 0.0f, 0.0f)));
-    Vec3 pin0 (Matrix::transform3x3 (rootBody->GetMatrix(), Vec3(1.0f, 0.0f, 0.0f)));
-    Vec3 pin1 (pin0 * (-1.0f));
-    new dNewtonGearJoint (1.0f, pin0.ptr(), leftTire, pin1.ptr(), rightTire);
+    //newtonDynamicBody* const rootBody = (newtonDynamicBody*) GetBoneBody (GetBone(0));
+    //newtonDynamicBody* const leftTire = (newtonDynamicBody*) m_frontTire[0]->GetBody0();
+    //newtonDynamicBody* const rightTire = (newtonDynamicBody*) m_frontTire[1]->GetBody0();
+    //Vec3 pin0 (Matrix::transform3x3 (rootBody->GetMatrix(), Vec3(1.0f, 0.0f, 0.0f)));
+    //Vec3 pin1 (pin0 * (-1.0f));
+    //new dNewtonGearJoint (1.0f, pin0.ptr(), leftTire, pin1.ptr(), rightTire);
 
 /*
 	// find all vehicle components
@@ -350,7 +345,7 @@ dNewtonUniversalActuator* ForkliftPhysicsModel::LinkRearTire (newtonDynamicBody*
 	newtonDynamicBody* const parent = (newtonDynamicBody*)tire->GetParent();
 
 	Matrix tireMatrix(tire->GetMatrix());
-	Matrix axisMatrix(parent->GetMatrix());
+	Matrix axisMatrix(Matrix (Quat (90.0f * 3.141592f / 180.0f, Vec3 (1.0f, 0.0f, 0.0f))) * parent->GetMatrix());
 	axisMatrix.setTrans(tireMatrix.getTrans());
 
 	dFloat angleLimit = 30.0f * 3.141592f / 180.0f;
@@ -452,12 +447,9 @@ void ForkliftPhysicsModel::OnPreUpdate (dFloat timestep)
 
     void* const bone = GetBone(0);
     newtonDynamicBody* const rootBody = (newtonDynamicBody*) GetBoneBody (bone);
-	Matrix matrix(rootBody->GetMatrix());
-	matrix.setTrans(Vec3(0.0f, 0.0f, 0.0f));
-
-	Vec3 tirePing (matrix * Vec3(1.0f, 0.0f, 0.0f));
+    Vec3 tirePin (Matrix::transform3x3 (rootBody->GetMatrix(), Vec3(1.0f, 0.0f, 0.0f)));
 	if (engineTorque != 0.0f) {
-		Vec4 torque (tirePing * engineTorque, 0.0f);
+		Vec4 torque (tirePin * engineTorque, 0.0f);
         ((newtonDynamicBody*)m_frontTire[0]->GetBody0())->AddTorque (torque);
 		((newtonDynamicBody*)m_frontTire[1]->GetBody0())->AddTorque (torque);
 	}
@@ -465,13 +457,12 @@ void ForkliftPhysicsModel::OnPreUpdate (dFloat timestep)
 	for (int i = 0; i < 2; i ++) {
         newtonDynamicBody* const body = (newtonDynamicBody*)m_frontTire[i]->GetBody0();
 		Vec4 omega(body->GetOmega());
-		dFloat omegaMag = omega * tirePing;
+		dFloat omegaMag = omega * tirePin;
 		dFloat sign = (omegaMag >= 0.0f) ? 1.0 : -1.0f;
-		omega -= Vec4(tirePing * (sign * omegaMag * omegaMag * m_omegaResistance), 0.0f);
+		omega -= Vec4(tirePin * (sign * omegaMag * omegaMag * m_omegaResistance), 0.0f);
 		body->SetOmega(omega);
 	}
 
-/*
     // apply steering control
     dFloat steeringAngle = m_rearTire[0]->GetActuatorAngle1();
     if (m_inputRecored.m_steering < 0) {
@@ -481,7 +472,7 @@ void ForkliftPhysicsModel::OnPreUpdate (dFloat timestep)
     }
     m_rearTire[0]->SetTargetAngle1(steeringAngle);
     m_rearTire[1]->SetTargetAngle1(steeringAngle);
-
+/*
 	// control tilt angle
 	dFloat tiltAngle = m_tiltAngle;
 	if (m_inputRecored.m_tilt > 0) {
