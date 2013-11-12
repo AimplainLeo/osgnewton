@@ -65,13 +65,12 @@ class ForkliftPhysicsModel::ForkliftTireBody: public newtonDynamicBody
 
 	virtual void OnContactProcess (dNewtonContactMaterial* const contactMaterial, dFloat timestep, int threadIndex) const
 	{
-		Matrix tireMatrix (GetMatrix());
+		//Matrix tireMatrix (GetMatrix());
 		Matrix chassis (m_rootBody->GetMatrix());
-		chassis.setTrans (Vec3 (0.0f, 0.0f, 0.0f));
-		tireMatrix.setTrans (Vec3 (0.0f, 0.0f, 0.0f));
-		Vec3 upPin (chassis * Vec3 (0.0f, 0.0f, 1.0f));
-		Vec3 axisPin (chassis * Vec3 (1.0f, 0.0f, 0.0f));
-		Vec3 dir (axisPin ^ upPin);
+        //Vec3 upPin (Matrix::transform3x3 (chassis, Vec3(0.0f, 0.0f, 1.0f)));
+		//Vec3 axisPin (Matrix::transform3x3 (chassis, Vec3(1.0f, 0.0f, 0.0f)));
+		//Vec3 dir (axisPin ^ upPin);
+        Vec3 dir (Matrix::transform3x3 (chassis, Vec3(0.0f, 1.0f, 0.0f)));
 		for (void* contact = contactMaterial->GetFirstContact(); contact; contact = contactMaterial->GetNextContact(contact)) {
 			contactMaterial->RotateTangentDirections (contact, dir.ptr());
 		}
@@ -252,7 +251,6 @@ ForkliftPhysicsModel::ForkliftPhysicsModel (osgViewer::Viewer* const viewer, new
 	TraverseNode traverse (this, world);
 	rootNode->accept(traverse);
 
-
 	int boneCount = GetBoneCount();
 	for (int i = 1; i < boneCount; i ++) {
 		void* const bone = GetBone(i);
@@ -274,6 +272,17 @@ ForkliftPhysicsModel::ForkliftPhysicsModel (osgViewer::Viewer* const viewer, new
 			m_revolvePlatform = LinkBasePlatform (body);
 		}
 	}
+
+    // links the two front tire with a relational joint to add as a differential to regulate
+    // the angular velocity
+    newtonDynamicBody* const rootBody = (newtonDynamicBody*) GetBoneBody (GetBone(0));
+    newtonDynamicBody* const leftTire = (newtonDynamicBody*) m_frontTire[0]->GetBody0();
+    newtonDynamicBody* const rightTire = (newtonDynamicBody*) m_frontTire[1]->GetBody0();
+//  Vec3 pin0 (rootBody->GetMatrix().preMult(Vec3(1.0f, 0.0f, 0.0f)));
+    Vec3 pin0 (Matrix::transform3x3 (rootBody->GetMatrix(), Vec3(1.0f, 0.0f, 0.0f)));
+    Vec3 pin1 (pin0 * (-1.0f));
+    new dNewtonGearJoint (1.0f, pin0.ptr(), leftTire, pin1.ptr(), rightTire);
+
 /*
 	// find all vehicle components
 	SceneNode* const base1Node = (SceneNode*) bodyNode->getChild (rootName + "lift_1");
