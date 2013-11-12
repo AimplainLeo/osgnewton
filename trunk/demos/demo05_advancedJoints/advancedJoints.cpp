@@ -101,28 +101,26 @@ class PhysicsWorld: public DemoExample
         // set all of the player inputs
         ForkliftPhysicsModel::InputRecored inputs;
         inputs.m_throtler = int (m_inputHandler->IsKeyDown(osgGA::GUIEventAdapter::KEY_W)) - int (m_inputHandler->IsKeyDown(osgGA::GUIEventAdapter::KEY_S));
-//        inputs.m_throtler = (m_keyboard->isKeyDown(OIS::KC_W) - m_keyboard->isKeyDown(OIS::KC_S));
-/*
-        inputs.m_steering = (m_keyboard->isKeyDown(OIS::KC_A) - m_keyboard->isKeyDown(OIS::KC_D));
-        inputs.m_lift = (m_keyboard->isKeyDown(OIS::KC_Q) - m_keyboard->isKeyDown(OIS::KC_E));
-        inputs.m_tilt = (m_keyboard->isKeyDown(OIS::KC_X) - m_keyboard->isKeyDown(OIS::KC_Z));
-        inputs.m_palette = (m_keyboard->isKeyDown(OIS::KC_F) - m_keyboard->isKeyDown(OIS::KC_G));
-
+        inputs.m_steering = int (m_inputHandler->IsKeyDown(osgGA::GUIEventAdapter::KEY_A)) - int (m_inputHandler->IsKeyDown(osgGA::GUIEventAdapter::KEY_D));
+        
+        inputs.m_lift = int (m_inputHandler->IsKeyDown(osgGA::GUIEventAdapter::KEY_Q)) - int (m_inputHandler->IsKeyDown(osgGA::GUIEventAdapter::KEY_E));
+        inputs.m_tilt = int (m_inputHandler->IsKeyDown(osgGA::GUIEventAdapter::KEY_X)) - int (m_inputHandler->IsKeyDown(osgGA::GUIEventAdapter::KEY_Z));
+        inputs.m_palette = int (m_inputHandler->IsKeyDown(osgGA::GUIEventAdapter::KEY_F)) - int (m_inputHandler->IsKeyDown(osgGA::GUIEventAdapter::KEY_G));
 
         // check if there are some vehicle input, if there is, then wakeup the vehicle
-        if (m_keyboard->isKeyDown(OIS::KC_W) || 
-            m_keyboard->isKeyDown(OIS::KC_S) || 
-            m_keyboard->isKeyDown(OIS::KC_A) || 
-            m_keyboard->isKeyDown(OIS::KC_D) ||	
-            m_keyboard->isKeyDown(OIS::KC_F) ||	
-            m_keyboard->isKeyDown(OIS::KC_G) ||	
-            m_keyboard->isKeyDown(OIS::KC_Z) ||	
-            m_keyboard->isKeyDown(OIS::KC_C) ||	
-            m_keyboard->isKeyDown(OIS::KC_Q) ||	
-            m_keyboard->isKeyDown(OIS::KC_E)) {
+        if (m_inputHandler->IsKeyDown(osgGA::GUIEventAdapter::KEY_W) || 
+            m_inputHandler->IsKeyDown(osgGA::GUIEventAdapter::KEY_S) || 
+            m_inputHandler->IsKeyDown(osgGA::GUIEventAdapter::KEY_A) || 
+            m_inputHandler->IsKeyDown(osgGA::GUIEventAdapter::KEY_D) ||	
+            m_inputHandler->IsKeyDown(osgGA::GUIEventAdapter::KEY_F) ||	
+            m_inputHandler->IsKeyDown(osgGA::GUIEventAdapter::KEY_G) ||	
+            m_inputHandler->IsKeyDown(osgGA::GUIEventAdapter::KEY_Z) ||	
+            m_inputHandler->IsKeyDown(osgGA::GUIEventAdapter::KEY_C) ||	
+            m_inputHandler->IsKeyDown(osgGA::GUIEventAdapter::KEY_Q) ||	
+            m_inputHandler->IsKeyDown(osgGA::GUIEventAdapter::KEY_E)) {
                 playerBody->SetSleepState(false);
         }
-*/
+
         playerController->ApplyInputs (inputs);
     }
 
