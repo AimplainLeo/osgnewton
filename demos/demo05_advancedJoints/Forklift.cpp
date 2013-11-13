@@ -49,7 +49,7 @@ static ForkliftPhysicsModel::ARTICULATED_VEHICLE_DEFINITION forkliftDefinition[]
 	{"lift_2",		"convexHull",			 40.0f, 90.0f},
 	{"lift_3",		"convexHull",			 30.0f, 90.0f},
 	{"lift_4",		"convexHull",			 20.0f, 90.0f},
-	{"left_teeth",  "convexHullAggregate",	 10.0f, 90.0f},
+//	{"left_teeth",  "convexHullAggregate",	 10.0f, 90.0f},
 //	{"right_teeth", "convexHullAggregate",	 10.0f, 90.0f},
 };													
 
