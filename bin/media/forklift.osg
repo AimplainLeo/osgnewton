@@ -80910,9 +80910,9 @@ MatrixTransform {
               cullingActive TRUE
               referenceFrame RELATIVE
               Matrix {
-                -40 -1.90735e-005 -3.49691e-006 0
-                -3.49692e-006 1.25567e-005 40 0
-                -1.90735e-005 40 -1.25567e-005 0
+               -1 0 0 0
+                0 0 1 0
+                0 1 0 0
                 0.182045 -0.12249 -0.298146 1
               }
               num_children 1
@@ -80923,10 +80923,10 @@ MatrixTransform {
                 cullingActive TRUE
                 referenceFrame RELATIVE
                 Matrix {
-                  -1 1.58932e-008 9.53694e-008 0
-                  -1.58932e-008 -1 -2.84217e-014 0
-                  9.53694e-008 -2.84217e-014 1 0
-                  0.034078 0.00752 -0.000951002 1
+                 -40 0 0 0
+                  0 -40 0 0
+                  0  0 40 0
+                  1.363 0.3 -0.038 1
                 }
                 num_children 1
                 Geode {
@@ -81470,9 +81470,9 @@ MatrixTransform {
               cullingActive TRUE
               referenceFrame RELATIVE
               Matrix {
-                40 4.33681e-019 0 0
-                0 1.25567e-005 -40 0
-                2.71051e-019 40 1.25567e-005 0
+                1 0 0 0
+                0 0 -1 0
+                0 1 0 0
                 0.195494 -0.140195 0.298145 1
               }
               num_children 1
@@ -81483,10 +81483,10 @@ MatrixTransform {
                 cullingActive TRUE
                 referenceFrame RELATIVE
                 Matrix {
-                  1 -1.58933e-008 7.94663e-009 0
-                  1.58933e-008 1 0 0
-                  -7.94663e-009 0 1 0
-                  -0.033587 0.007388 -0.000508999 1
+                  40 0 0 0
+                  0 40 0 0
+                  0 0 40 0
+                  -1.343 0.28 -0.02 1
                 }
                 num_children 1
                 Geode {
