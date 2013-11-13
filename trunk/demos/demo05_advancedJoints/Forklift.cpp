@@ -49,8 +49,8 @@ static ForkliftPhysicsModel::ARTICULATED_VEHICLE_DEFINITION forkliftDefinition[]
 	{"lift_2",		"convexHull",			 40.0f, 90.0f},
 	{"lift_3",		"convexHull",			 30.0f, 90.0f},
 	{"lift_4",		"convexHull",			 20.0f, 90.0f},
-//	{"left_teeth",  "convexHullAggregate",	 10.0f, 90.0f},
-//	{"right_teeth", "convexHullAggregate",	 10.0f, 90.0f},
+	{"left_teeth",  "convexHullAggregate",	 10.0f, 90.0f},
+	{"right_teeth", "convexHullAggregate",	 10.0f, 90.0f},
 };													
 
 
@@ -162,8 +162,21 @@ class ForkliftPhysicsModel::TraverseNode: public NodeVisitor
 				convexHull.SetMatrix(&dMatrix(matrix.ptr())[0][0]);
 				m_currentBody->SetCollision (&convexHull);
 			} else if (!strcmp (definition->m_shapeTypeName, "convexHullAggregate")) {
-				dAssert (0);
-//				shape = MakeConvexHullAggregate(bodyPart);
+                Matrix matrix;
+                for (int i = path.size() - 1; (i >= 0) && (path[i] != m_currentNode); i --) {
+                    if (path[i]->asTransform()) {
+                        MatrixTransform* const transformNode = path[i]->asTransform()->asMatrixTransform();
+                        matrix = matrix * transformNode->getMatrix();
+                    }
+                }
+                newtonMesh mesh (m_world, &node);
+                mesh.ApplyTransform(&dMatrix(matrix.ptr())[0][0]);
+
+                newtonMesh convexAproximation (m_world);
+                convexAproximation.CreateApproximateConvexDecomposition(mesh, 0.01f, 0.2f, 32, 100);
+                dNewtonCollisionCompound compoundShape (m_world, convexAproximation, DemoExample::m_allExcludingMousePick);
+                m_currentBody->SetCollision (&compoundShape);
+
 			} else {
 				dAssert (0);
 			}
@@ -271,6 +284,10 @@ ForkliftPhysicsModel::ForkliftPhysicsModel (osgViewer::Viewer* const viewer, new
 			m_slidePlaforms[1] = LinkLiftPlatform (body);
 		} else if (transformNode->getName() == "lift_4") {
 			m_slidePlaforms[2] = LinkLiftPlatform (body);
+        } else if (transformNode->getName() == "left_teeth") {
+            m_slideTooth[0] = LinkTooth (body, 1.0f);
+        } else if (transformNode->getName() == "right_teeth") {
+            m_slideTooth[1] = LinkTooth (body, -1.0f);
 		}
 	}
 
@@ -283,45 +300,6 @@ ForkliftPhysicsModel::ForkliftPhysicsModel (osgViewer::Viewer* const viewer, new
     //Vec3 pin1 (pin0 * (-1.0f));
     //new dNewtonGearJoint (1.0f, pin0.ptr(), leftTire, pin1.ptr(), rightTire);
 
-/*
-	// find all vehicle components
-	SceneNode* const base1Node = (SceneNode*) bodyNode->getChild (rootName + "lift_1");
-	SceneNode* const base2Node = (SceneNode*) base1Node->getChild (rootName + "lift_2");
-	SceneNode* const base3Node = (SceneNode*) base2Node->getChild (rootName + "lift_3");
-	SceneNode* const base4Node = (SceneNode*) base3Node->getChild (rootName + "lift_4");
-	SceneNode* const leftTeethNode = (SceneNode*) base4Node->getChild (rootName + "left_teeth");
-	SceneNode* const rightTeethNode = (SceneNode*) base4Node->getChild (rootName + "right_teeth");
-	dAssert (leftTeethNode);
-	dAssert (leftTeethNode);
-
-	// make the lift base
-	newtonDynamicBody* const base1 = CreateBasePlatform (base1Node, origin);
-	newtonDynamicBody* const base2 = CreateBasePlatform (base2Node, origin);
-	newtonDynamicBody* const base3 = CreateBasePlatform (base3Node, origin);
-	newtonDynamicBody* const base4 = CreateBasePlatform (base4Node, origin);
-
-	// make the left and right palette teeth
-	newtonDynamicBody* const leftTooth = CreateTooth (leftTeethNode, origin);
-	newtonDynamicBody* const rightTooth = CreateTooth (rightTeethNode, origin);
-
-	// add the lifter apparatus bones 
-	void* const base1Bone = AddBone (base1, &bindMatrix[0][0], parentBone);
-	void* const base2Bone = AddBone (base2, &bindMatrix[0][0], base1Bone);
-	void* const base3Bone = AddBone (base3, &bindMatrix[0][0], base2Bone);
-	void* const base4Bone = AddBone (base4, &bindMatrix[0][0], base3Bone);
-	// connect the forklift base
-
-	m_slidePlaforms[0] = LinkBasePlatform (base1, base2);
-	m_slidePlaforms[1] = LinkBasePlatform (base2, base3);
-	m_slidePlaforms[2] = LinkBasePlatform (base3, base4);
-
-	// add the teeth bode
-	AddBone (leftTooth, &bindMatrix[0][0], base4Bone);
-	AddBone (rightTooth, &bindMatrix[0][0], base4Bone);
-	// connect the teeth
-	m_slideTooth[0] = LinkTooth (base4, leftTooth, 1.0f);
-	m_slideTooth[1] = LinkTooth (base4, rightTooth, -1.0f);
-*/
 	// calculate a fake engine 
 	CalculateEngine ((newtonDynamicBody*)m_frontTire[0]->GetBody0());
 
@@ -394,15 +372,15 @@ dNewtonSliderActuator* ForkliftPhysicsModel::LinkLiftPlatform (newtonDynamicBody
 	return new dNewtonSliderActuator (&dMatrix(axisMatrix.ptr())[0][0], 0.1f, -0.25f, 1.5f, platform, parent);
 }
 
-
-/*
-dNewtonSliderActuator* ForkliftPhysicsModel::LinkTooth(newtonDynamicBody* const parent, newtonDynamicBody* const child, dFloat dir)
+//dNewtonSliderActuator* ForkliftPhysicsModel::LinkTooth(newtonDynamicBody* const parent, newtonDynamicBody* const child, dFloat dir)
+dNewtonSliderActuator* ForkliftPhysicsModel::LinkTooth (newtonDynamicBody* const child, dFloat dir)
 {
-	Matrix aligmentMatrix (Quaternion (Radian (dir * 3.141592f * 0.5f), Vec3 (0.0f, 1.0f, 0.0f)));
-	Matrix baseMatrix((child->GetMatrix() * aligmentMatrix).transpose());
-	return new dNewtonSliderActuator (&baseMatrix[0][0], 0.25f, -0.25f, 0.25f, child, parent);
+//	Matrix aligmentMatrix (Quaternion (Radian (dir * 3.141592f * 0.5f), Vec3 (0.0f, 1.0f, 0.0f)));
+//	Matrix baseMatrix((child->GetMatrix() * aligmentMatrix).transpose());
+//	return new dNewtonSliderActuator (&baseMatrix[0][0], 0.25f, -0.25f, 0.25f, child, parent);
+    return NULL;
 }
-*/
+
 
 void ForkliftPhysicsModel::ApplyInputs(const InputRecored& inputs)
 {

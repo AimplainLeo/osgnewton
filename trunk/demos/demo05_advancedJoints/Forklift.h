@@ -63,17 +63,18 @@ class ForkliftPhysicsModel: public newtonArticulationManager::articulatedTransfo
 	dNewtonUniversalActuator* LinkRearTire (newtonDynamicBody* const tire);
 	dNewtonHingeActuator* LinkBasePlatform (newtonDynamicBody* const platform);
 	dNewtonSliderActuator* LinkLiftPlatform (newtonDynamicBody* const platform);
+	dNewtonSliderActuator* LinkTooth (newtonDynamicBody* const child, dFloat dir);
 
    	void ApplyInputs(const InputRecored& inputs);
     void CalculateEngine (newtonDynamicBody* const tire);
 
-//	dNewtonSliderActuator* LinkTooth(newtonDynamicBody* const parent, newtonDynamicBody* const child, Real dir);
+
 
 	dNewtonHingeJoint* m_frontTire[2];
 	dNewtonUniversalActuator* m_rearTire[2];
 	dNewtonHingeActuator* m_revolvePlatform;
 	dNewtonSliderActuator* m_slidePlaforms[3];
-//	dNewtonSliderActuator* m_slideTooth[2];
+	dNewtonSliderActuator* m_slideTooth[2];
 	dFloat m_liftPosit;
 	dFloat m_openPosit;
 	dFloat m_tiltAngle;
