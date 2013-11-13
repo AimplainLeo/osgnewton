@@ -62,23 +62,21 @@ class ForkliftPhysicsModel: public newtonArticulationManager::articulatedTransfo
 	dNewtonHingeJoint* LinkFrontTire (newtonDynamicBody* const tire);
 	dNewtonUniversalActuator* LinkRearTire (newtonDynamicBody* const tire);
 	dNewtonHingeActuator* LinkBasePlatform (newtonDynamicBody* const platform);
+	dNewtonSliderActuator* LinkLiftPlatform (newtonDynamicBody* const platform);
 
    	void ApplyInputs(const InputRecored& inputs);
-        void CalculateEngine (newtonDynamicBody* const tire);
+    void CalculateEngine (newtonDynamicBody* const tire);
 
-//	dNewtonUniversalActuator* LinkRearTire (newtonDynamicBody* const tire);
-//	dNewtonHingeActuator* LinkBasePlatform (newtonDynamicBody* const platform);
-//	dNewtonSliderActuator* LinkBasePlatform (newtonDynamicBody* const parent, newtonDynamicBody* const platform);
 //	dNewtonSliderActuator* LinkTooth(newtonDynamicBody* const parent, newtonDynamicBody* const child, Real dir);
 
 	dNewtonHingeJoint* m_frontTire[2];
 	dNewtonUniversalActuator* m_rearTire[2];
 	dNewtonHingeActuator* m_revolvePlatform;
-//	dNewtonSliderActuator* m_slidePlaforms[3];
+	dNewtonSliderActuator* m_slidePlaforms[3];
 //	dNewtonSliderActuator* m_slideTooth[2];
-//	dFloat m_liftPosit;
-//	dFloat m_openPosit;
-//	dFloat m_tiltAngle;
+	dFloat m_liftPosit;
+	dFloat m_openPosit;
+	dFloat m_tiltAngle;
 	dFloat m_maxEngineTorque;
 	dFloat m_omegaResistance;
 	InputRecored m_inputRecored;

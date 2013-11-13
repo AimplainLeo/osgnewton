@@ -46,10 +46,10 @@ static ForkliftPhysicsModel::ARTICULATED_VEHICLE_DEFINITION forkliftDefinition[]
 	{"rr_tire",		"tireShape",			 50.0f, 90.0f},
 	{"rl_tire",		"tireShape",			 50.0f, 90.0f},
 	{"lift_1",		"convexHull",			 50.0f, 90.0f},
-//	{"lift_2",		"convexHull",			 40.0f, 90.0f},
-//	{"lift_3",		"convexHull",			 30.0f, 90.0f},
-//	{"lift_4",		"convexHull",			 20.0f, 90.0f},
-//	{"left_teeth",  "convexHullAggregate",	 10.0f, 90.0f},
+	{"lift_2",		"convexHull",			 40.0f, 90.0f},
+	{"lift_3",		"convexHull",			 30.0f, 90.0f},
+	{"lift_4",		"convexHull",			 20.0f, 90.0f},
+	{"left_teeth",  "convexHullAggregate",	 10.0f, 90.0f},
 //	{"right_teeth", "convexHullAggregate",	 10.0f, 90.0f},
 };													
 
@@ -59,7 +59,6 @@ class ForkliftPhysicsModel::ForkliftTireBody: public newtonDynamicBody
 	public:
 	ForkliftTireBody (newtonWorld* const world, dFloat mass, const dNewtonCollision* const collision, MatrixTransform* const node, const Matrix& location)
 		:newtonDynamicBody (world, mass, collision, node, location)
-//		,m_rootBody(NULL)
 	{
 	}
 
@@ -69,8 +68,9 @@ class ForkliftPhysicsModel::ForkliftTireBody: public newtonDynamicBody
 
 		Matrix tireMatrix (GetMatrix());
 		Matrix chassis (rootBody->GetMatrix());
-        Vec3 upPin (Matrix::transform3x3 (chassis, Vec3(0.0f, 0.0f, 1.0f)));
-		Vec3 axisPin (Matrix::transform3x3 (tireMatrix, Vec3(1.0f, 0.0f, 0.0f)));
+
+        Vec3 upPin (Matrix::transform3x3 (Vec3(0.0f, 0.0f, 1.0f), chassis));
+		Vec3 axisPin (Matrix::transform3x3 (Vec3(1.0f, 0.0f, 0.0f), tireMatrix));
 		Vec3 dir (axisPin ^ upPin);
 		for (void* contact = contactMaterial->GetFirstContact(); contact; contact = contactMaterial->GetNextContact(contact)) {
 			contactMaterial->RotateTangentDirections (contact, dir.ptr());
@@ -223,10 +223,9 @@ class ForkliftPhysicsModel::TraverseNode: public NodeVisitor
 
 ForkliftPhysicsModel::ForkliftPhysicsModel (osgViewer::Viewer* const viewer, newtonWorld* const world, const char* const fileName, const Vec3& origin)
 	:newtonArticulationManager::articulatedTransformController (world->GetHierarchyTransformManager(), true)
-//	,m_application(application)
-//	,m_liftPosit(0.0f)
-//	,m_openPosit(0.0f)
-//	,m_tiltAngle(0.0f)
+	,m_liftPosit(0.0f)
+	,m_openPosit(0.0f)
+	,m_tiltAngle(0.0f)
     ,m_maxEngineTorque(0.0f)
     ,m_omegaResistance(0.0f)
 {
@@ -266,6 +265,12 @@ ForkliftPhysicsModel::ForkliftPhysicsModel (osgViewer::Viewer* const viewer, new
 			m_rearTire[1] = LinkRearTire (body);
 		} else if (transformNode->getName() == "lift_1") {
 			m_revolvePlatform = LinkBasePlatform (body);
+		} else if (transformNode->getName() == "lift_2") {
+			m_slidePlaforms[0] = LinkLiftPlatform (body);
+		} else if (transformNode->getName() == "lift_3") {
+			m_slidePlaforms[1] = LinkLiftPlatform (body);
+		} else if (transformNode->getName() == "lift_4") {
+			m_slidePlaforms[2] = LinkLiftPlatform (body);
 		}
 	}
 
@@ -274,7 +279,7 @@ ForkliftPhysicsModel::ForkliftPhysicsModel (osgViewer::Viewer* const viewer, new
     //newtonDynamicBody* const rootBody = (newtonDynamicBody*) GetBoneBody (GetBone(0));
     //newtonDynamicBody* const leftTire = (newtonDynamicBody*) m_frontTire[0]->GetBody0();
     //newtonDynamicBody* const rightTire = (newtonDynamicBody*) m_frontTire[1]->GetBody0();
-    //Vec3 pin0 (Matrix::transform3x3 (rootBody->GetMatrix(), Vec3(1.0f, 0.0f, 0.0f)));
+    //Vec3 pin0 (Matrix::transform3x3 (Vec3(1.0f, 0.0f, 0.0f), rootBody->GetMatrix()));
     //Vec3 pin1 (pin0 * (-1.0f));
     //new dNewtonGearJoint (1.0f, pin0.ptr(), leftTire, pin1.ptr(), rightTire);
 
@@ -360,19 +365,33 @@ dNewtonUniversalActuator* ForkliftPhysicsModel::LinkRearTire (newtonDynamicBody*
 
 dNewtonHingeActuator* ForkliftPhysicsModel::LinkBasePlatform (newtonDynamicBody* const platform)  
 {
-//	Matrix aligmentMatrix (Quaternion (Radian (3.141592f * 0.5f), Vec3 (0.0f, 1.0f, 0.0f)));
-//	Matrix baseMatrix((platform->GetMatrix() * aligmentMatrix).transpose());
-
 	newtonDynamicBody* const parent = (newtonDynamicBody*)platform->GetParent();
 
-	Matrix tireMatrix(platform->GetMatrix());
+	Matrix platformMatrix(platform->GetMatrix());
 	Matrix axisMatrix(parent->GetMatrix());
-	axisMatrix.setTrans(tireMatrix.getTrans());
+	axisMatrix.setTrans(platformMatrix.getTrans());
 
-	dFloat minAngleLimit = -30.0f * 3.141592f / 180.0f;
-	dFloat maxAngleLimit =  20.0f * 3.141592f / 180.0f;
+	dFloat minAngleLimit = -20.0f * 3.141592f / 180.0f;
+	dFloat maxAngleLimit =  30.0f * 3.141592f / 180.0f;
 	dFloat angularRate = 10.0f * 3.141592f / 180.0f;
 	return new dNewtonHingeActuator (&dMatrix(axisMatrix.ptr())[0][0], angularRate, minAngleLimit, maxAngleLimit, platform, parent);
+}
+
+dNewtonSliderActuator* ForkliftPhysicsModel::LinkLiftPlatform (newtonDynamicBody* const platform)  
+{
+	newtonDynamicBody* rootBody = platform;
+	while (rootBody->GetParent()) {
+		rootBody = (newtonDynamicBody*)rootBody->GetParent();
+	}
+	newtonDynamicBody* const parent = (newtonDynamicBody*)platform->GetParent();
+
+	Matrix aligmentMatrix (Quat (-90.0f * 3.141592f / 180.0f, Vec3 (0.0f, 1.0f, 0.0f)));
+	Matrix platformMatrix(platform->GetMatrix());
+
+	Matrix axisMatrix(aligmentMatrix * rootBody->GetMatrix());
+	axisMatrix.setTrans(platformMatrix.getTrans());
+
+	return new dNewtonSliderActuator (&dMatrix(axisMatrix.ptr())[0][0], 0.1f, -0.25f, 1.5f, platform, parent);
 }
 
 
@@ -447,7 +466,7 @@ void ForkliftPhysicsModel::OnPreUpdate (dFloat timestep)
 
     void* const bone = GetBone(0);
     newtonDynamicBody* const rootBody = (newtonDynamicBody*) GetBoneBody (bone);
-    Vec3 tirePin (Matrix::transform3x3 (rootBody->GetMatrix(), Vec3(1.0f, 0.0f, 0.0f)));
+    Vec3 tirePin (Matrix::transform3x3 (Vec3(1.0f, 0.0f, 0.0f), rootBody->GetMatrix()));
 	if (engineTorque != 0.0f) {
 		Vec4 torque (tirePin * engineTorque, 0.0f);
         ((newtonDynamicBody*)m_frontTire[0]->GetBody0())->AddTorque (torque);
@@ -472,7 +491,7 @@ void ForkliftPhysicsModel::OnPreUpdate (dFloat timestep)
     }
     m_rearTire[0]->SetTargetAngle1(steeringAngle);
     m_rearTire[1]->SetTargetAngle1(steeringAngle);
-/*
+
 	// control tilt angle
 	dFloat tiltAngle = m_tiltAngle;
 	if (m_inputRecored.m_tilt > 0) {
@@ -483,7 +502,6 @@ void ForkliftPhysicsModel::OnPreUpdate (dFloat timestep)
 		m_tiltAngle = m_revolvePlatform->GetActuatorAngle();
 	}
 	m_revolvePlatform->SetTargetAngle (tiltAngle);
-
 
 	// control lift position
 	dFloat liftPosit= m_liftPosit;
@@ -498,6 +516,7 @@ void ForkliftPhysicsModel::OnPreUpdate (dFloat timestep)
 		m_slidePlaforms[i]->SetTargetPosit(liftPosit);
 	}
 
+/*
 	// control teeth position
 	dFloat toothPosit = m_slideTooth[0]->GetActuatorPosit();
 	if (m_inputRecored.m_palette > 0) {

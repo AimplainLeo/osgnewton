@@ -91,21 +91,21 @@ class PhysicsWorld: public DemoExample
 
     virtual void OnBeginUpdate (dFloat timestepInSecunds)
     {
-        DemoExample::OnBeginUpdate (timestepInSecunds);
+		DemoExample::OnBeginUpdate (timestepInSecunds);
 
-        const newtonInputManager::osgPlayerUserDataPair& playerData = GetInputManager()->GetPlayer();
+		const newtonInputManager::osgPlayerUserDataPair& playerData = GetInputManager()->GetPlayer();
 
-        newtonDynamicBody* const playerBody = (newtonDynamicBody*)playerData.m_player;
-        ForkliftPhysicsModel* const playerController = (ForkliftPhysicsModel*)playerData.m_userData;
+		newtonDynamicBody* const playerBody = (newtonDynamicBody*)playerData.m_player;
+		ForkliftPhysicsModel* const playerController = (ForkliftPhysicsModel*)playerData.m_userData;
 
-        // set all of the player inputs
-        ForkliftPhysicsModel::InputRecored inputs;
-        inputs.m_throtler = int (m_inputHandler->IsKeyDown(osgGA::GUIEventAdapter::KEY_W)) - int (m_inputHandler->IsKeyDown(osgGA::GUIEventAdapter::KEY_S));
-        inputs.m_steering = int (m_inputHandler->IsKeyDown(osgGA::GUIEventAdapter::KEY_A)) - int (m_inputHandler->IsKeyDown(osgGA::GUIEventAdapter::KEY_D));
+		// set all of the player inputs
+		ForkliftPhysicsModel::InputRecored inputs;
+		inputs.m_throtler = int (m_inputHandler->IsKeyDown(osgGA::GUIEventAdapter::KEY_W)) - int (m_inputHandler->IsKeyDown(osgGA::GUIEventAdapter::KEY_S));
+		inputs.m_steering = int (m_inputHandler->IsKeyDown(osgGA::GUIEventAdapter::KEY_A)) - int (m_inputHandler->IsKeyDown(osgGA::GUIEventAdapter::KEY_D));
         
-        inputs.m_lift = int (m_inputHandler->IsKeyDown(osgGA::GUIEventAdapter::KEY_Q)) - int (m_inputHandler->IsKeyDown(osgGA::GUIEventAdapter::KEY_E));
-        inputs.m_tilt = int (m_inputHandler->IsKeyDown(osgGA::GUIEventAdapter::KEY_X)) - int (m_inputHandler->IsKeyDown(osgGA::GUIEventAdapter::KEY_Z));
-        inputs.m_palette = int (m_inputHandler->IsKeyDown(osgGA::GUIEventAdapter::KEY_F)) - int (m_inputHandler->IsKeyDown(osgGA::GUIEventAdapter::KEY_G));
+		inputs.m_tilt = int (m_inputHandler->IsKeyDown(osgGA::GUIEventAdapter::KEY_X)) - int (m_inputHandler->IsKeyDown(osgGA::GUIEventAdapter::KEY_Z));
+		inputs.m_lift = int (m_inputHandler->IsKeyDown(osgGA::GUIEventAdapter::KEY_Q)) - int (m_inputHandler->IsKeyDown(osgGA::GUIEventAdapter::KEY_E));
+		inputs.m_palette = int (m_inputHandler->IsKeyDown(osgGA::GUIEventAdapter::KEY_F)) - int (m_inputHandler->IsKeyDown(osgGA::GUIEventAdapter::KEY_G));
 
         // check if there are some vehicle input, if there is, then wakeup the vehicle
         if (m_inputHandler->IsKeyDown(osgGA::GUIEventAdapter::KEY_W) || 
