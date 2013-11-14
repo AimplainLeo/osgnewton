@@ -49,8 +49,8 @@ static ForkliftPhysicsModel::ARTICULATED_VEHICLE_DEFINITION forkliftDefinition[]
 	{"lift_2",		"convexHull",			 40.0f, 90.0f},
 	{"lift_3",		"convexHull",			 30.0f, 90.0f},
 	{"lift_4",		"convexHull",			 20.0f, 90.0f},
-	{"left_teeth",  "convexHullAggregate",	 10.0f, 90.0f},
 	{"right_teeth", "convexHullAggregate",	 10.0f, 90.0f},
+	{"left_teeth",  "convexHullAggregate",	 10.0f, 90.0f},
 };													
 
 
@@ -64,12 +64,12 @@ class ForkliftPhysicsModel::ForkliftTireBody: public newtonDynamicBody
 
 	virtual void OnContactProcess (dNewtonContactMaterial* const contactMaterial, dFloat timestep, int threadIndex) const
 	{
-        newtonDynamicBody* const rootBody = (newtonDynamicBody*)GetParent();
+		newtonDynamicBody* const rootBody = (newtonDynamicBody*)GetParent();
 
 		Matrix tireMatrix (GetMatrix());
 		Matrix chassis (rootBody->GetMatrix());
 
-        Vec3 upPin (Matrix::transform3x3 (Vec3(0.0f, 0.0f, 1.0f), chassis));
+		Vec3 upPin (Matrix::transform3x3 (Vec3(0.0f, 0.0f, 1.0f), chassis));
 		Vec3 axisPin (Matrix::transform3x3 (Vec3(1.0f, 0.0f, 0.0f), tireMatrix));
 		Vec3 dir (axisPin ^ upPin);
 		for (void* contact = contactMaterial->GetFirstContact(); contact; contact = contactMaterial->GetNextContact(contact)) {
@@ -117,14 +117,6 @@ class ForkliftPhysicsModel::TraverseNode: public NodeVisitor
 		} else {
 			body = new ForkliftTireBody (m_world, definition->m_mass, &placeHolderShape, node->asMatrixTransform(), matrix);
 		}
-
-		// move the center of mass a little to the back	of the chassis
-		//Vec3 com;
-		//body->GetCenterOfMass (&com.x);
-		//com.z += 0.5f;
-		//com.y -= 0.2f;
-		//body->SetCenterOfMass (&com.x);
-
 		return body;
 	}
 
@@ -155,27 +147,30 @@ class ForkliftPhysicsModel::TraverseNode: public NodeVisitor
 					}
 				}
 				newtonMesh convexMesh (m_world, &node);
-				dNewtonCollisionConvexHull convexHull (m_world, convexMesh, DemoExample::m_allExcludingMousePick);
-				dMatrix localMatrix;
-				convexHull.GetMatrix(&localMatrix[0][0]);
-				matrix = Matrix (&localMatrix[0][0]) * matrix;
-				convexHull.SetMatrix(&dMatrix(matrix.ptr())[0][0]);
-				m_currentBody->SetCollision (&convexHull);
-			} else if (!strcmp (definition->m_shapeTypeName, "convexHullAggregate")) {
-                Matrix matrix;
-                for (int i = path.size() - 1; (i >= 0) && (path[i] != m_currentNode); i --) {
-                    if (path[i]->asTransform()) {
-                        MatrixTransform* const transformNode = path[i]->asTransform()->asMatrixTransform();
-                        matrix = matrix * transformNode->getMatrix();
-                    }
-                }
-                newtonMesh mesh (m_world, &node);
-                mesh.ApplyTransform(&dMatrix(matrix.ptr())[0][0]);
+				convexMesh.ApplyTransform(&dMatrix(matrix.ptr())[0][0]);
 
-                newtonMesh convexAproximation (m_world);
-                convexAproximation.CreateApproximateConvexDecomposition(mesh, 0.01f, 0.2f, 32, 100);
-                dNewtonCollisionCompound compoundShape (m_world, convexAproximation, DemoExample::m_allExcludingMousePick);
-                m_currentBody->SetCollision (&compoundShape);
+				dNewtonCollisionConvexHull convexHull (m_world, convexMesh, DemoExample::m_allExcludingMousePick);
+				//dMatrix localMatrix;
+				//convexHull.GetMatrix(&localMatrix[0][0]);
+				//matrix = Matrix (&localMatrix[0][0]) * matrix;
+				//convexHull.SetMatrix(&dMatrix(matrix.ptr())[0][0]);
+				m_currentBody->SetCollision (&convexHull);
+
+			} else if (!strcmp (definition->m_shapeTypeName, "convexHullAggregate")) {
+				Matrix matrix;
+				for (int i = path.size() - 1; (i >= 0) && (path[i] != m_currentNode); i --) {
+					if (path[i]->asTransform()) {
+						MatrixTransform* const transformNode = path[i]->asTransform()->asMatrixTransform();
+						matrix = matrix * transformNode->getMatrix();
+					}
+				}
+				newtonMesh mesh (m_world, &node);
+				mesh.ApplyTransform(&dMatrix(matrix.ptr())[0][0]);
+
+				newtonMesh convexAproximation (m_world);
+				convexAproximation.CreateApproximateConvexDecomposition(mesh, 0.01f, 0.2f, 32, 100);
+				dNewtonCollisionCompound compoundShape (m_world, convexAproximation, DemoExample::m_allExcludingMousePick);
+				m_currentBody->SetCollision (&compoundShape);
 
 			} else {
 				dAssert (0);
@@ -224,7 +219,7 @@ class ForkliftPhysicsModel::TraverseNode: public NodeVisitor
 			traverse (node);
 		}
 	}
-	
+
 	newtonWorld* m_world;
 	ForkliftPhysicsModel* m_model;
 	void* m_parentBone;
@@ -239,8 +234,8 @@ ForkliftPhysicsModel::ForkliftPhysicsModel (osgViewer::Viewer* const viewer, new
 	,m_liftPosit(0.0f)
 	,m_openPosit(0.0f)
 	,m_tiltAngle(0.0f)
-    ,m_maxEngineTorque(0.0f)
-    ,m_omegaResistance(0.0f)
+	,m_maxEngineTorque(0.0f)
+	,m_omegaResistance(0.0f)
 {
 	dAssert (viewer->getSceneData());
 	Group* const rootGroup = viewer->getSceneData()->asGroup();
@@ -264,11 +259,18 @@ ForkliftPhysicsModel::ForkliftPhysicsModel (osgViewer::Viewer* const viewer, new
 	rootNode->accept(traverse);
 
 	int boneCount = GetBoneCount();
-	for (int i = 1; i < boneCount; i ++) {
+	for (int i = 0; i < boneCount; i ++) {
 		void* const bone = GetBone(i);
 		newtonDynamicBody* const body = (newtonDynamicBody*) GetBoneBody (bone);
 		MatrixTransform* const transformNode = (MatrixTransform*)body->GetUserData();
-		if (transformNode->getName() == "fr_tire") {
+
+		if (transformNode->getName() == "body") {
+			// move the center of mass a little to the back	of the chassis
+			Vec4 cog(body->GetCOG());
+			//com.z += 0.5f;
+			cog.z() -= 0.2f;
+			body->SetCOG (cog);
+		} else if (transformNode->getName() == "fr_tire") {
 			m_frontTire[0] = LinkFrontTire (body);
 		} else if (transformNode->getName() == "fl_tire") {
 			m_frontTire[1] = LinkFrontTire (body);
@@ -284,21 +286,21 @@ ForkliftPhysicsModel::ForkliftPhysicsModel (osgViewer::Viewer* const viewer, new
 			m_slidePlaforms[1] = LinkLiftPlatform (body);
 		} else if (transformNode->getName() == "lift_4") {
 			m_slidePlaforms[2] = LinkLiftPlatform (body);
-        } else if (transformNode->getName() == "left_teeth") {
-            m_slideTooth[0] = LinkTooth (body, 1.0f);
-        } else if (transformNode->getName() == "right_teeth") {
-            m_slideTooth[1] = LinkTooth (body, -1.0f);
+		} else if (transformNode->getName() == "right_teeth") {
+			m_slideTooth[0] = LinkTooth (body, 1.0f);
+		} else if (transformNode->getName() == "left_teeth") {
+			m_slideTooth[1] = LinkTooth (body, 0.0f);
 		}
 	}
 
-    // links the two front tire with a relational joint to add as a differential to regulate
-    // the angular velocity
-    //newtonDynamicBody* const rootBody = (newtonDynamicBody*) GetBoneBody (GetBone(0));
-    //newtonDynamicBody* const leftTire = (newtonDynamicBody*) m_frontTire[0]->GetBody0();
-    //newtonDynamicBody* const rightTire = (newtonDynamicBody*) m_frontTire[1]->GetBody0();
-    //Vec3 pin0 (Matrix::transform3x3 (Vec3(1.0f, 0.0f, 0.0f), rootBody->GetMatrix()));
-    //Vec3 pin1 (pin0 * (-1.0f));
-    //new dNewtonGearJoint (1.0f, pin0.ptr(), leftTire, pin1.ptr(), rightTire);
+	// links the two front tire with a relational joint to add as a differential to regulate
+	// the angular velocity
+	//newtonDynamicBody* const rootBody = (newtonDynamicBody*) GetBoneBody (GetBone(0));
+	//newtonDynamicBody* const leftTire = (newtonDynamicBody*) m_frontTire[0]->GetBody0();
+	//newtonDynamicBody* const rightTire = (newtonDynamicBody*) m_frontTire[1]->GetBody0();
+	//Vec3 pin0 (Matrix::transform3x3 (Vec3(1.0f, 0.0f, 0.0f), rootBody->GetMatrix()));
+	//Vec3 pin1 (pin0 * (-1.0f));
+	//new dNewtonGearJoint (1.0f, pin0.ptr(), leftTire, pin1.ptr(), rightTire);
 
 	// calculate a fake engine 
 	CalculateEngine ((newtonDynamicBody*)m_frontTire[0]->GetBody0());
@@ -372,13 +374,20 @@ dNewtonSliderActuator* ForkliftPhysicsModel::LinkLiftPlatform (newtonDynamicBody
 	return new dNewtonSliderActuator (&dMatrix(axisMatrix.ptr())[0][0], 0.1f, -0.25f, 1.5f, platform, parent);
 }
 
-//dNewtonSliderActuator* ForkliftPhysicsModel::LinkTooth(newtonDynamicBody* const parent, newtonDynamicBody* const child, dFloat dir)
-dNewtonSliderActuator* ForkliftPhysicsModel::LinkTooth (newtonDynamicBody* const child, dFloat dir)
+dNewtonSliderActuator* ForkliftPhysicsModel::LinkTooth (newtonDynamicBody* const platform, dFloat dir)
 {
-//	Matrix aligmentMatrix (Quaternion (Radian (dir * 3.141592f * 0.5f), Vec3 (0.0f, 1.0f, 0.0f)));
-//	Matrix baseMatrix((child->GetMatrix() * aligmentMatrix).transpose());
-//	return new dNewtonSliderActuator (&baseMatrix[0][0], 0.25f, -0.25f, 0.25f, child, parent);
-    return NULL;
+	newtonDynamicBody* rootBody = platform;
+	while (rootBody->GetParent()) {
+		rootBody = (newtonDynamicBody*)rootBody->GetParent();
+	}
+	newtonDynamicBody* const parent = (newtonDynamicBody*)platform->GetParent();
+
+	Matrix aligmentMatrix (Quat (dir * 180.0f * 3.141592f / 180.0f, Vec3 (0.0f, 0.0f, 1.0f)));
+	Matrix axisMatrix(aligmentMatrix * rootBody->GetMatrix());
+	Matrix platformMatrix (platform->GetMatrix());
+
+	axisMatrix.setTrans(platformMatrix.getTrans());
+	return new dNewtonSliderActuator (&dMatrix(axisMatrix.ptr())[0][0], 0.2f, -0.25f, 0.25f, platform, parent);
 }
 
 
@@ -390,34 +399,34 @@ void ForkliftPhysicsModel::ApplyInputs(const InputRecored& inputs)
 
 void ForkliftPhysicsModel::CalculateEngine(newtonDynamicBody* const tire)
 {
-    // calculate the maximum torque that the engine will produce
-    dNewtonCollision* const tireShape = tire->GetCollision();
-    newtonDynamicBody* const rootBody = (newtonDynamicBody*)tire->GetParent();
-    newtonWorld* const world = (newtonWorld*) rootBody->GetNewton();
+	// calculate the maximum torque that the engine will produce
+	dNewtonCollision* const tireShape = tire->GetCollision();
+	newtonDynamicBody* const rootBody = (newtonDynamicBody*)tire->GetParent();
+	newtonWorld* const world = (newtonWorld*) rootBody->GetNewton();
 
-    dAssert (tireShape->GetType() == dNewtonCollision::m_chamferedCylinder);
+	dAssert (tireShape->GetType() == dNewtonCollision::m_chamferedCylinder);
 
-    Vec3 p0;
-    Vec3 p1;
-    Matrix matrix;
-    tireShape->CalculateAABB (&dMatrix(matrix.ptr())[0][0], &p0.x(), &p1.x());
+	Vec3 p0;
+	Vec3 p1;
+	Matrix matrix;
+	tireShape->CalculateAABB (&dMatrix(matrix.ptr())[0][0], &p0.x(), &p1.x());
 
-    dFloat Ixx;
-    dFloat Iyy;
-    dFloat Izz;
-    dFloat mass;
-    rootBody->GetMassAndInertia (mass, Ixx, Iyy, Izz);
+	dFloat Ixx;
+	dFloat Iyy;
+	dFloat Izz;
+	dFloat mass;
+	rootBody->GetMassAndInertia (mass, Ixx, Iyy, Izz);
 
-    const Vec4 gravity (world->GetGravity());
+	const Vec4 gravity (world->GetGravity());
 
-    dFloat radius = (p1.z() - p0.z()) * 0.5f;
+	dFloat radius = (p1.z() - p0.z()) * 0.5f;
 
-    // calculate a torque the will produce a 0.5f of the force of gravity
-    m_maxEngineTorque = 0.25f * mass * radius * gravity.length();
+	// calculate a torque the will produce a 0.5f of the force of gravity
+	m_maxEngineTorque = 0.25f * mass * radius * gravity.length();
 
-    // calculate the coefficient of drag for top speed of 20 m/s
-    dFloat maxOmega = 200.0f / radius;
-    m_omegaResistance = 1.0f / maxOmega;
+	// calculate the coefficient of drag for top speed of 20 m/s
+	dFloat maxOmega = 200.0f / radius;
+	m_omegaResistance = 1.0f / maxOmega;
 }
 
 
@@ -442,17 +451,17 @@ void ForkliftPhysicsModel::OnPreUpdate (dFloat timestep)
 	m_frontTire[0]->SetFriction(brakeTorque);
 	m_frontTire[1]->SetFriction(brakeTorque);
 
-    void* const bone = GetBone(0);
-    newtonDynamicBody* const rootBody = (newtonDynamicBody*) GetBoneBody (bone);
-    Vec3 tirePin (Matrix::transform3x3 (Vec3(1.0f, 0.0f, 0.0f), rootBody->GetMatrix()));
+	void* const bone = GetBone(0);
+	newtonDynamicBody* const rootBody = (newtonDynamicBody*) GetBoneBody (bone);
+	Vec3 tirePin (Matrix::transform3x3 (Vec3(1.0f, 0.0f, 0.0f), rootBody->GetMatrix()));
 	if (engineTorque != 0.0f) {
 		Vec4 torque (tirePin * engineTorque, 0.0f);
-        ((newtonDynamicBody*)m_frontTire[0]->GetBody0())->AddTorque (torque);
+		((newtonDynamicBody*)m_frontTire[0]->GetBody0())->AddTorque (torque);
 		((newtonDynamicBody*)m_frontTire[1]->GetBody0())->AddTorque (torque);
 	}
 
 	for (int i = 0; i < 2; i ++) {
-        newtonDynamicBody* const body = (newtonDynamicBody*)m_frontTire[i]->GetBody0();
+		newtonDynamicBody* const body = (newtonDynamicBody*)m_frontTire[i]->GetBody0();
 		Vec4 omega(body->GetOmega());
 		dFloat omegaMag = omega * tirePin;
 		dFloat sign = (omegaMag >= 0.0f) ? 1.0 : -1.0f;
@@ -460,15 +469,15 @@ void ForkliftPhysicsModel::OnPreUpdate (dFloat timestep)
 		body->SetOmega(omega);
 	}
 
-    // apply steering control
-    dFloat steeringAngle = m_rearTire[0]->GetActuatorAngle1();
-    if (m_inputRecored.m_steering < 0) {
-        steeringAngle = m_rearTire[0]->GetMinAngularLimit1(); 
-    } else if (m_inputRecored.m_steering > 0) {
-        steeringAngle = m_rearTire[0]->GetMaxAngularLimit1(); 
-    }
-    m_rearTire[0]->SetTargetAngle1(steeringAngle);
-    m_rearTire[1]->SetTargetAngle1(steeringAngle);
+	// apply steering control
+	dFloat steeringAngle = m_rearTire[0]->GetActuatorAngle1();
+	if (m_inputRecored.m_steering < 0) {
+		steeringAngle = m_rearTire[0]->GetMinAngularLimit1(); 
+	} else if (m_inputRecored.m_steering > 0) {
+		steeringAngle = m_rearTire[0]->GetMaxAngularLimit1(); 
+	}
+	m_rearTire[0]->SetTargetAngle1(steeringAngle);
+	m_rearTire[1]->SetTargetAngle1(steeringAngle);
 
 	// control tilt angle
 	dFloat tiltAngle = m_tiltAngle;
@@ -494,7 +503,6 @@ void ForkliftPhysicsModel::OnPreUpdate (dFloat timestep)
 		m_slidePlaforms[i]->SetTargetPosit(liftPosit);
 	}
 
-/*
 	// control teeth position
 	dFloat toothPosit = m_slideTooth[0]->GetActuatorPosit();
 	if (m_inputRecored.m_palette > 0) {
@@ -507,5 +515,5 @@ void ForkliftPhysicsModel::OnPreUpdate (dFloat timestep)
 	for (int i = 0; i < sizeof (m_slideTooth) / sizeof (m_slideTooth[0]); i ++) {
 		m_slideTooth[i]->SetTargetPosit(toothPosit);
 	}
-*/
+
 }
