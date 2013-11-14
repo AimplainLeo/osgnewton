@@ -29,35 +29,94 @@
 
 
 using namespace osg;
-/*
-void LumberYard (SceneManager* const sceneMgr, OgreNewtonWorld* const world, const Vector3& origin, int count_x, int count_z, int high)
+
+static Geode* CreateBoxMesh (osg::newtonWorld* const world, const Vec3& size)
 {
-	DotSceneLoader loader;
-	SceneNode* const lumberYardRoot = CreateNode (sceneMgr, NULL, Vector3::ZERO, Quaternion::IDENTITY);
-	loader.parseDotScene ("lumberyard.scene", "Autodetect", sceneMgr, lumberYardRoot);
+	// create a texture and apply uv to this mesh
+	ref_ptr<Texture2D> texture = new Texture2D;
+	ref_ptr<Image> image = osgDB::readImageFile("images\\wood_2.tga");
+	texture->setImage (image.get());
+	texture->setWrap(Texture::WRAP_S, Texture::REPEAT);
+	texture->setWrap(Texture::WRAP_R, Texture::REPEAT);
+	texture->setWrap(Texture::WRAP_T, Texture::REPEAT);
 
-//SceneNode* const viper = CreateNode (sceneMgr, NULL, Vector3::ZERO, Quaternion::IDENTITY);
-//viper->setPosition(origin + Vector3(5, 0, 0)) ;
-//loader.parseDotScene ("viper.scene", "Autodetect", sceneMgr, viper);
-//loader.parseDotScene ("aventador.scene", "Autodetect", sceneMgr, viper);
+	dNewtonCollisionBox shape (world, size.x(), size.y(), size.z(), 0);
 
-	Real mass = 5.0f;
+	// create a visual for visual representation
+	newtonMesh boxMesh (&shape);
+	boxMesh.Triangulate();
+	int materialId = boxMesh.AddMaterial(texture);
 
-	int count = lumberYardRoot->numChildren();
-	for (int i = 0; i < count; i ++) {
-		SceneNode* const node = (SceneNode*)lumberYardRoot->getChild(i);
+	// apply uv to this mesh
+	boxMesh.ApplyBoxMapping (materialId, materialId, materialId);
 
-		Entity* const ent = (Entity*) node->getAttachedObject (0);
-		Vector3 scale (node->getScale());
+	// create a manual object for rendering 
+	return boxMesh.CreateGeodeNode();
+}
 
-		OgreNewtonMesh bodyMesh (world, ent);
-		bodyMesh.ApplyTransform (Vector3::ZERO, scale, Quaternion::IDENTITY);
-		dNewtonCollisionConvexHull bodyCollision (world, bodyMesh, m_all);
-		Matrix4 bodyMatrix;
-		bodyMatrix.makeTransform (node->_getDerivedPosition() + origin, Vector3 (1.0f, 1.0f, 1.0f), node->_getDerivedOrientation());
-		new OgreNewtonDynamicBody (world, mass, &bodyCollision, node, bodyMatrix);
+
+static void AddPart (osgViewer::Viewer* const viewer, osg::newtonWorld* const world, ref_ptr<Geode> part, const Vec3& location, const Vec3& size)
+{
+	Group* const rootGroup = viewer->getSceneData()->asGroup();
+
+	Matrix matrix;
+	matrix.setTrans (location);
+	ref_ptr<MatrixTransform> transformNode = new MatrixTransform(matrix);	
+	rootGroup->addChild(transformNode.get());
+
+	// attach geometry to transform node 
+	transformNode->addChild(part.get());
+
+	// make a dynamic body
+	dNewtonCollisionBox box (world, size.x(), size.y(), size.z(), DemoExample::m_all);
+	new newtonDynamicBody (world, 10.0f, &box, transformNode.get(), matrix);
+}
+
+void LumberYard (osgViewer::Viewer* const viewer, osg::newtonWorld* const world, const Vec3& location, dFloat mass, int high)
+{
+	dAssert (viewer->getSceneData());
+	Group* const rootGroup = viewer->getSceneData()->asGroup();
+	dAssert (rootGroup);
+
+	// create the mesh parts
+	Vec3 postSize(0.2f, 0.2f, 1.0f);
+	ref_ptr<Geode> post = CreateBoxMesh (world, postSize);
+
+	Vec3 plankSize(4.0f, 1.5f, 0.1f);
+	ref_ptr<Geode> plank = CreateBoxMesh (world, plankSize);
+
+	Vec3 lumberSize(4.0f, 0.2f, 0.2f);
+	ref_ptr<Geode> lumber = CreateBoxMesh (world, lumberSize);
+
+	Vec3 slackSize(0.1f, 1.5f, 0.1f);
+	ref_ptr<Geode> slack = CreateBoxMesh (world, slackSize);
+
+	dFloat width = postSize.x();
+	// place four post
+	AddPart (viewer, world, post, location + Vec3(-plankSize.x() + width, -plankSize.y() + width, postSize.z()) * 0.5f, postSize);
+	AddPart (viewer, world, post, location + Vec3(-plankSize.x() + width,  plankSize.y() - width, postSize.z()) * 0.5f, postSize);
+	AddPart (viewer, world, post, location + Vec3( plankSize.x() - width, -plankSize.y() + width, postSize.z()) * 0.5f, postSize);
+	AddPart (viewer, world, post, location + Vec3( plankSize.x() - width,  plankSize.y() - width, postSize.z()) * 0.5f, postSize);
+
+	// place the plank on top
+	AddPart (viewer, world, plank, location + Vec3 (0.0f,  0.0f, postSize.z() + width * 0.5f), plankSize);
+
+	// stack the lumber
+	dFloat z0 = postSize.z() + plankSize.z();
+	for (int i = 0; i < high; i ++) {
+		AddPart (viewer, world, lumber, location + Vec3 (0.0f, (- plankSize.y() + lumberSize.y()) * 0.5f, z0 + lumberSize.z() * 0.5f), lumberSize);
+		AddPart (viewer, world, lumber, location + Vec3 (0.0f, (  plankSize.y() - lumberSize.y()) * 0.5f, z0 + lumberSize.z() * 0.5f), lumberSize);
+
+		z0 += lumberSize.z();
+		dFloat x0 = (-lumberSize.x() + slackSize.x()) * 0.5f;
+		dFloat dx = (lumberSize.x() - slackSize.x()) / 4.0f;
+		for (int j = 0; j <= 4; j ++) {
+			AddPart (viewer, world, slack, location + Vec3 (x0, 0.0f, z0 + slackSize.z() * 0.5f), slackSize);
+			x0 += dx;
+		}
+		z0 += slackSize.z();
 	}
 }
-*/
+
 
 
