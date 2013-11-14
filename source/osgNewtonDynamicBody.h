@@ -42,6 +42,9 @@ namespace osg
 		dFloat GetMass() const; 
 		Vec4 GetInertia() const ; 
 
+		Vec4 GetCOG () const;
+		void SetCOG (const Vec4& com);
+
 		void SetVeloc (const Vec4& veloc);
 		Vec4 GetVeloc () const;
 
@@ -86,6 +89,19 @@ namespace osg
 		GetMassAndInertia (mass, Ixx, Iyy, Izz);
 		return Vec4 (Ixx, Iyy, Izz, mass);
 	}
+
+	inline Vec4 newtonDynamicBody::GetCOG () const
+	{
+		Vec4 cog(0.0f, 0.0f, 0.0f, 0.0f);
+		GetCenterOfMass (cog.ptr());
+		return cog;
+	}
+
+	inline void newtonDynamicBody::SetCOG (const Vec4& cog)
+	{
+		SetCenterOfMass (cog.ptr());
+	}
+
 
 	inline Matrix newtonDynamicBody::GetMatrix() const
 	{
