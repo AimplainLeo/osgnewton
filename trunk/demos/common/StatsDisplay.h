@@ -41,7 +41,6 @@ class StatsDisplay
 
 	void SetVilibleFlag(bool flags);
 
-
 	private:
 	osgViewer::Viewer* m_viewer;
 	newtonWorld* m_physicsWorld;
@@ -62,12 +61,11 @@ class StatsDisplay
 	osgText::Text* m_hideStatDisplay;
 	osgText::Text* m_debugDisplay;
 	osgText::Text* m_freeCameraNavigation;
+	osgText::Text* m_extraControlKeys;
 	osgText::Text* m_pikingBodyFromeScreen;
 	osgText::Text* m_exitApplication;
 	osgText::Text* m_throwBody;
 	osgText::Text* m_asyncronousPhysicsSimulation;
-	
-	
 };
 
 #endif

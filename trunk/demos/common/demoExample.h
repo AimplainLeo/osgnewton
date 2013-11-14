@@ -35,10 +35,8 @@ class DemoExample: public newtonWorld
 		m_gravidyBody = 1<<2,
 
 		m_all = m_rayCast | m_gravidyBody | m_mousePick,
-//		m_allExcludingMousePick = m_all & ~ m_mousePick,
-m_allExcludingMousePick = m_all | 256,
+		m_allExcludingMousePick = m_all & ~ m_mousePick,
 	};
-
 
 	class SmoothCamera: public dNewtonTransformLerp
 	{
