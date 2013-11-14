@@ -79,9 +79,10 @@ void StatsDisplay::Init(osgViewer::Viewer* const viewer, newtonWorld* const phys
 	m_asyncronousPhysicsSimulation = CreateText(10, 100, "F2: toggle asynchronous simulation update", FONT_CHARACTER_SIZE);
 	m_debugDisplay = CreateText(10, 120, "F3: toggle display physic debug", FONT_CHARACTER_SIZE);
 	m_freeCameraNavigation = CreateText (10, 150, "W, S, A, D:  free camera navigation", FONT_CHARACTER_SIZE);
-	m_throwBody = CreateText (10, 170, "space: throw random rigid body", FONT_CHARACTER_SIZE);
-	m_pikingBodyFromeScreen = CreateText (10, 190, "hold CTRL and left mouse key: show mouse cursor and pick objects from the screen", FONT_CHARACTER_SIZE);
-	m_exitApplication = CreateText (10, 210, "ESC: exit application", FONT_CHARACTER_SIZE);
+	m_extraControlKeys = CreateText (10, 170, "Q, E, Z, X, F, G:  extra control keys", FONT_CHARACTER_SIZE);
+	m_throwBody = CreateText (10, 190, "space: throw random rigid body", FONT_CHARACTER_SIZE);
+	m_pikingBodyFromeScreen = CreateText (10, 210, "hold CTRL and left mouse key: show mouse cursor and pick objects from the screen", FONT_CHARACTER_SIZE);
+	m_exitApplication = CreateText (10, 230, "ESC: exit application", FONT_CHARACTER_SIZE);
 
 	// set a mask for invisibility
 	m_textCamera->setNodeMask(1);
