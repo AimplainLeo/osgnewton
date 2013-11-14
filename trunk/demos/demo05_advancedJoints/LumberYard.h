@@ -28,7 +28,6 @@
 #define _BUILD_LUMBER_YARD_H_
 
 using namespace osg;
-//void LumberYard (SceneManager* const sceneMgr, OgreNewtonWorld* const world, const Vector3& origin, int count_x, int count_z, int high);
-
+void LumberYard (osgViewer::Viewer* const viewer, osg::newtonWorld* const world, const Vec3& location, dFloat mass, int high);
 
 #endif

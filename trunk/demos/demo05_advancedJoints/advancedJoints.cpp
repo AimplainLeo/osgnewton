@@ -82,11 +82,17 @@ class PhysicsWorld: public DemoExample
 		newtonRayCast raycaster (this, DemoExample::m_rayCast); 
 		raycaster.CastRay (start, end);
 
+		// load and a vehicle model and create articulated an articulate vehicle
 		ForkliftPhysicsModel* const forkLift = new ForkliftPhysicsModel(m_viewer, this, "forklift.osg", Vec3 (raycaster.m_contact.x(), raycaster.m_contact.y(), raycaster.m_contact.z() + 1.0f));
 
         // set this object as the player
         newtonDynamicBody* const playerRootBody = (newtonDynamicBody*) forkLift->GetBoneBody (forkLift->GetBone(0));
         GetInputManager()->SetPlayer (playerRootBody, forkLift);
+
+		// load some props to play with
+		LumberYard (m_viewer, this, Vec3 (raycaster.m_contact.x() - 5, raycaster.m_contact.y() + 10, raycaster.m_contact.z()), 10.0f, 8);
+		LumberYard (m_viewer, this, Vec3 (raycaster.m_contact.x() - 0, raycaster.m_contact.y() + 10, raycaster.m_contact.z()), 10.0f, 8);
+		LumberYard (m_viewer, this, Vec3 (raycaster.m_contact.x() + 5, raycaster.m_contact.y() + 10, raycaster.m_contact.z()), 10.0f, 8);
 	}
 
     virtual void OnBeginUpdate (dFloat timestepInSecunds)
