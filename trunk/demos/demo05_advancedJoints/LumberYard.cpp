@@ -55,7 +55,7 @@ static Geode* CreateBoxMesh (osg::newtonWorld* const world, const Vec3& size)
 }
 
 
-static void AddPart (osgViewer::Viewer* const viewer, osg::newtonWorld* const world, ref_ptr<Geode> part, const Vec3& location, const Vec3& size)
+static void AddPart (osgViewer::Viewer* const viewer, osg::newtonWorld* const world, ref_ptr<Geode> part, const Vec3& location, const Vec3& size, dFloat mass)
 {
 	Group* const rootGroup = viewer->getSceneData()->asGroup();
 
@@ -69,7 +69,7 @@ static void AddPart (osgViewer::Viewer* const viewer, osg::newtonWorld* const wo
 
 	// make a dynamic body
 	dNewtonCollisionBox box (world, size.x(), size.y(), size.z(), DemoExample::m_all);
-	new newtonDynamicBody (world, 10.0f, &box, transformNode.get(), matrix);
+	new newtonDynamicBody (world, mass, &box, transformNode.get(), matrix);
 }
 
 void LumberYard (osgViewer::Viewer* const viewer, osg::newtonWorld* const world, const Vec3& location, dFloat mass, int high)
@@ -93,25 +93,25 @@ void LumberYard (osgViewer::Viewer* const viewer, osg::newtonWorld* const world,
 
 	dFloat width = postSize.x();
 	// place four post
-	AddPart (viewer, world, post, location + Vec3(-plankSize.x() + width, -plankSize.y() + width, postSize.z()) * 0.5f, postSize);
-	AddPart (viewer, world, post, location + Vec3(-plankSize.x() + width,  plankSize.y() - width, postSize.z()) * 0.5f, postSize);
-	AddPart (viewer, world, post, location + Vec3( plankSize.x() - width, -plankSize.y() + width, postSize.z()) * 0.5f, postSize);
-	AddPart (viewer, world, post, location + Vec3( plankSize.x() - width,  plankSize.y() - width, postSize.z()) * 0.5f, postSize);
+	AddPart (viewer, world, post, location + Vec3(-plankSize.x() + width, -plankSize.y() + width, postSize.z()) * 0.5f, postSize, mass * 2.0f);
+	AddPart (viewer, world, post, location + Vec3(-plankSize.x() + width,  plankSize.y() - width, postSize.z()) * 0.5f, postSize, mass * 2.0f);
+	AddPart (viewer, world, post, location + Vec3( plankSize.x() - width, -plankSize.y() + width, postSize.z()) * 0.5f, postSize, mass * 2.0f);
+	AddPart (viewer, world, post, location + Vec3( plankSize.x() - width,  plankSize.y() - width, postSize.z()) * 0.5f, postSize, mass * 2.0f);
 
 	// place the plank on top
-	AddPart (viewer, world, plank, location + Vec3 (0.0f,  0.0f, postSize.z() + width * 0.5f), plankSize);
+	AddPart (viewer, world, plank, location + Vec3 (0.0f,  0.0f, postSize.z() + width * 0.5f), plankSize, mass);
 
 	// stack the lumber
 	dFloat z0 = postSize.z() + plankSize.z();
 	for (int i = 0; i < high; i ++) {
-		AddPart (viewer, world, lumber, location + Vec3 (0.0f, (- plankSize.y() + lumberSize.y()) * 0.5f, z0 + lumberSize.z() * 0.5f), lumberSize);
-		AddPart (viewer, world, lumber, location + Vec3 (0.0f, (  plankSize.y() - lumberSize.y()) * 0.5f, z0 + lumberSize.z() * 0.5f), lumberSize);
+		AddPart (viewer, world, lumber, location + Vec3 (0.0f, (- plankSize.y() + lumberSize.y()) * 0.5f, z0 + lumberSize.z() * 0.5f), lumberSize, mass * 0.5f);
+		AddPart (viewer, world, lumber, location + Vec3 (0.0f, (  plankSize.y() - lumberSize.y()) * 0.5f, z0 + lumberSize.z() * 0.5f), lumberSize, mass * 0.5f);
 
 		z0 += lumberSize.z();
 		dFloat x0 = (-lumberSize.x() + slackSize.x()) * 0.5f;
 		dFloat dx = (lumberSize.x() - slackSize.x()) / 4.0f;
 		for (int j = 0; j <= 4; j ++) {
-			AddPart (viewer, world, slack, location + Vec3 (x0, 0.0f, z0 + slackSize.z() * 0.5f), slackSize);
+			AddPart (viewer, world, slack, location + Vec3 (x0, 0.0f, z0 + slackSize.z() * 0.5f), slackSize, mass * 0.25);
 			x0 += dx;
 		}
 		z0 += slackSize.z();
