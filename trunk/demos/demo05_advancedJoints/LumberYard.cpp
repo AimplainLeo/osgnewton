@@ -82,13 +82,13 @@ void LumberYard (osgViewer::Viewer* const viewer, osg::newtonWorld* const world,
 	Vec3 postSize(0.2f, 0.2f, 1.0f);
 	ref_ptr<Geode> post = CreateBoxMesh (world, postSize);
 
-	Vec3 plankSize(4.0f, 1.5f, 0.1f);
+	Vec3 plankSize(4.0f, 1.0f, 0.1f);
 	ref_ptr<Geode> plank = CreateBoxMesh (world, plankSize);
 
-	Vec3 lumberSize(4.0f, 0.2f, 0.2f);
+	Vec3 lumberSize(plankSize.x() + 0.2, 0.2f, 0.2f);
 	ref_ptr<Geode> lumber = CreateBoxMesh (world, lumberSize);
 
-	Vec3 slackSize(0.1f, 1.5f, 0.1f);
+	Vec3 slackSize(0.1f, plankSize.y() + 0.1f, 0.1f);
 	ref_ptr<Geode> slack = CreateBoxMesh (world, slackSize);
 
 	dFloat width = postSize.x();
