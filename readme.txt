@@ -4,15 +4,19 @@ Testing the wrapper binary examples:
 
 Building the library:
 1- DownLoad Newton SDK 3.13 (minimum)
-2- Open visual studio 2010 solution in folder: ..\newton-dynamics\packages\projects\visualStudio_2010\build.sln
+2- Open visual studio 2010 solution in folder: 
+..\newton-dynamics\packages\projects\visualStudio_2010\build.sln
 
 3- You will need to set few environment variables: 
-Say your open scenegraph SDK is installed in folder: C:\development\OpenSceneGraph-3.0.1\projects_vs2010
-and the newton SDK is installed in forder: C:\development\newton-dynamics
+Say your open scenegraph SDK is installed in folder: 
+C:\development\OpenSceneGraph-3.0.1\vs2010
 
-these environment  variables should point to:
+and the newton SDK is installed in forder: 
+C:\development\newton-dynamics
+
+these environment variables should point to:
 OSG_SDK_PATH=C:\Development\OpenSceneGraph-3.0.1
-OSG_SDK_BUILD_PATH=C:\Development\OpenSceneGraph-3.0.1\vs2010_sln
+OSG_SDK_BUILD_PATH=C:\Development\OpenSceneGraph-3.0.1\vs2010
 NEWTON_DYNAMICS=C:\development\newton-dynamics
 
 4- Now with visual studio 2010, open solution:
