@@ -33,6 +33,7 @@ set_target_properties(${projectName} PROPERTIES COMPILE_FLAGS "/I${CMAKE_CURRENT
 															   /I${osgSDKBuild}/include 
 															   /I${newtonPath}/packages/dMath
 															   /I${newtonPath}/packages/dNewton
+															   /I${newtonPath}/packages/dContainers
 															   /I${newtonPath}/packages/dCustomJoints
 															   /I${newtonPath}/coreLibrary_300/source/newton")
 

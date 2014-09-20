@@ -84,7 +84,7 @@ Matrix DemoExample::SmoothCamera::CalculateIntepolatedMatrix (dFloat param) cons
 	static Matrix rotation (Quat (-90.0f * 3.14159265f / 180.0f, Vec3f (1.0f, 0.0f, 0.0f)));
 
 	dMatrix tmpMatrix;
-	InterplateMatrix (param, &tmpMatrix[0][0]);
+	InterpolateMatrix (param, &tmpMatrix[0][0]);
 	return Matrix::inverse(Matrix (&tmpMatrix[0][0])) * rotation;
 }
 

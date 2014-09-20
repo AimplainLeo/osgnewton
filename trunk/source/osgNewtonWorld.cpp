@@ -161,7 +161,7 @@ void newtonWorld::OnContactProcess (dNewtonContactMaterial* const contactMateria
 
 dMaterialPairManager::dMaterialPair* newtonWorld::GetDefualtMaterialPair ()
 {
-	return m_materialMap.GetDefualtPair ();
+	return m_materialMap.GetDefaultPair ();
 }
 
 void newtonWorld::AddMaterialPair (int materialId0, int materialId1, const dMaterialPairManager::dMaterialPair& pair)

@@ -15,20 +15,15 @@ and the newton SDK is installed in forder:
 C:\development\newton-dynamics
 
 these environment variables should point to:
-OSG_SDK_PATH=C:\Development\OpenSceneGraph-3.0.1
-OSG_SDK_BUILD_PATH=C:\Development\OpenSceneGraph-3.0.1\vs2010
+OSG_SDK_PATH=C:\Development\OpenSceneGraph-3.2.1
+OSG_SDK_BUILD_PATH=C:\Development\OpenSceneGraph-3.2.1\projects
 NEWTON_DYNAMICS=C:\development\newton-dynamics
 
-4- Now with visual studio 2010, open solution:
-C:\development\newton-dynamics\packages\projects\visualStudio_2010_dll\ogreNewton.sln
+4- in CMake drag file C:\develoment\osgnewton\CMakeLists.txt to the Cmake GUI
 
-and build the debug and release targets.
+5- Select visual studio 2010 compiler or better and click config and then generate solution
 
-5- in CMake drag file C:\develoment\osgnewton\CMakeLists.txt to the Cmake GUI
-
-6- Select visual studio 2010 compiler and click config and then generate solution
-
-7- Now you can open the solution with Visual studio 2010 and build the wrapper and all demos.
+6- Now you can open the solution with Visual studio 2010 and build the wrapper and all demos.
 
 
 

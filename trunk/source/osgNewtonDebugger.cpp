@@ -78,7 +78,7 @@ class DebugMeshDrawble: public Drawable
 	{
 		dVector minBox;
 		dVector maxBox;
-		dMatrix matrix (GetIdentityMatrix());
+		dMatrix matrix (dGetIdentityMatrix());
 		m_collision->CalculateAABB (&matrix[0][0], &minBox[0], &maxBox[0]);
 		return BoundingBox(Vec3 (minBox.m_x, minBox.m_y, minBox.m_z), Vec3 (maxBox.m_x, maxBox.m_y, maxBox.m_z));
 	}
@@ -93,7 +93,7 @@ class DebugMeshDrawble: public Drawable
 		glBegin(GL_LINES);
 		glColor3f(1.0f, 1.0f, 1.0f);
 
-		dMatrix localMatrix (GetIdentityMatrix());
+		dMatrix localMatrix (dGetIdentityMatrix());
 		m_collision->DebugRender (&localMatrix[0][0], &meshBuider);
 
 		glEnd();
