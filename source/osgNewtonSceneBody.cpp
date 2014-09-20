@@ -31,7 +31,7 @@ namespace osg
 newtonSceneBody::newtonSceneBody (newtonWorld* const ogreWorld, dLong collisionMask)
 	:dNewtonDynamicBody (NULL)
 {
-	dMatrix matrix(GetIdentityMatrix());
+	dMatrix matrix(dGetIdentityMatrix());
 	dNewtonCollisionScene collision (ogreWorld, collisionMask);
 	SetBody (NewtonCreateDynamicBody (ogreWorld->GetNewton (), collision.GetShape(), &matrix[0][0]));
 }

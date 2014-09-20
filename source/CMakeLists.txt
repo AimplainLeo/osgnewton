@@ -33,6 +33,7 @@ if (MSVC)
 	if (NOT buildStaticLibrary)
 		target_link_libraries (${projectName} debug ${newtonPath}/packages/projects/${packagesLibPath}/${PlatformName}/dMath/debug/dMath_d.lib
 											  debug	${newtonPath}/packages/projects/${packagesLibPath}/${PlatformName}/dNewton/debug/dNewton_d.lib
+											  debug ${newtonPath}/packages/projects/${packagesLibPath}/${PlatformName}/dContainers/debug/dContainers_d.lib
 											  debug ${newtonPath}/coreLibrary_300/projects/windows/${newtonLibPath}/${PlatformName}/newton/Debug/newton_d.lib
 											  debug ${newtonPath}/packages/projects/${packagesLibPath}/${PlatformName}/dJointLibrary/debug/dJointLibrary_d.lib
 											  debug ${osgSDKBuild}/lib/osgd.lib
@@ -44,6 +45,7 @@ if (MSVC)
 
 		target_link_libraries (${projectName} optimized ${newtonPath}/packages/projects/${packagesLibPath}/${PlatformName}/dMath/release/dMath.lib
 											  optimized ${newtonPath}/packages/projects/${packagesLibPath}/${PlatformName}/dNewton/release/dNewton.lib
+											  optimized ${newtonPath}/packages/projects/${packagesLibPath}/${PlatformName}/dContainers/release/dContainers.lib
 											  optimized ${newtonPath}/coreLibrary_300/projects/windows/${newtonLibPath}/${PlatformName}/newton/Release/newton.lib
 											  optimized ${newtonPath}/packages/projects/${packagesLibPath}/${PlatformName}/dJointLibrary/release/dJointLibrary.lib
 											  optimized ${osgSDKBuild}/lib/osg.lib
@@ -57,7 +59,9 @@ if (MSVC)
 							COMMAND xcopy  "\"\$(OutDir)\\*.dll\"" "\"${PROJECT_SOURCE_DIR}\\bin\\debug\\*.*\""  /F /Y /R		
 							COMMAND xcopy  "\"\$(OutDir)\\*.pdb\"" "\"${PROJECT_SOURCE_DIR}\\bin\\debug\\*.*\""  /F /Y /R		
 							COMMAND xcopy  "\"${newtonPath}\\packages\\projects\\${packagesLibPath}\\$(PlatformName)\\dNewton\\debug\\*.dll\"" "\"${PROJECT_SOURCE_DIR}\\bin\\debug\\*.*\""  /F /Y /R		
-							COMMAND xcopy  "\"${newtonPath}\\packages\\projects\\${packagesLibPath}\\$(PlatformName)\\dNewton\\debug\\*.pdb\"" "\"${PROJECT_SOURCE_DIR}\\bin\\debug\\*.*\""  /F /Y /R		
+							COMMAND xcopy  "\"${newtonPath}\\packages\\projects\\${packagesLibPath}\\$(PlatformName)\\dNewton\\debug\\*.pdb\"" "\"${PROJECT_SOURCE_DIR}\\bin\\debug\\*.*\""  /F /Y /R
+							COMMAND xcopy  "\"${newtonPath}\\packages\\projects\\${packagesLibPath}\\$(PlatformName)\\dContainers\\debug\\*.dll\"" "\"${PROJECT_SOURCE_DIR}\\bin\\debug\\*.*\""  /F /Y /R
+							COMMAND xcopy  "\"${newtonPath}\\packages\\projects\\${packagesLibPath}\\$(PlatformName)\\dContainers\\debug\\*.pdb\"" "\"${PROJECT_SOURCE_DIR}\\bin\\debug\\*.*\""  /F /Y /R
 							COMMAND xcopy  "\"${newtonPath}\\packages\\projects\\${packagesLibPath}\\$(PlatformName)\\dJointLibrary\\debug\\*.dll\"" "\"${PROJECT_SOURCE_DIR}\\bin\\debug\\*.*\""  /F /Y /R
 							COMMAND xcopy  "\"${newtonPath}\\packages\\projects\\${packagesLibPath}\\$(PlatformName)\\dJointLibrary\\debug\\*.pdb\"" "\"${PROJECT_SOURCE_DIR}\\bin\\debug\\*.*\""  /F /Y /R
 							COMMAND xcopy  "\"${newtonPath}\\coreLibrary_300\\projects\\windows\\${newtonLibPath}\\${PlatformName}\\newton\\debug\\*.dll\"" "\"${PROJECT_SOURCE_DIR}\\bin\\debug\\*.*\""  /F /Y /R
@@ -71,19 +75,20 @@ if (MSVC)
 							
 							COMMAND xcopy  "\"\$(OutDir)\\*.dll\"" "\"${PROJECT_SOURCE_DIR}\\bin\\release\\*.*\""  /F /Y /R		
 							COMMAND xcopy  "\"\$(OutDir)\\*.pdb\"" "\"${PROJECT_SOURCE_DIR}\\bin\\release\\*.*\""  /F /Y /R		
-							COMMAND xcopy  "\"${newtonPath}\\packages\\projects\\${packagesLibPath}\\$(PlatformName)\\dNewton\\debug\\*.dll\"" "\"${PROJECT_SOURCE_DIR}\\bin\\release\\*.*\""  /F /Y /R		
-							COMMAND xcopy  "\"${newtonPath}\\packages\\projects\\${packagesLibPath}\\$(PlatformName)\\dNewton\\debug\\*.pdb\"" "\"${PROJECT_SOURCE_DIR}\\bin\\release\\*.*\""  /F /Y /R		
-							COMMAND xcopy  "\"${newtonPath}\\packages\\projects\\${packagesLibPath}\\$(PlatformName)\\dJointLibrary\\debug\\*.dll\"" "\"${PROJECT_SOURCE_DIR}\\bin\\release\\*.*\""  /F /Y /R
-							COMMAND xcopy  "\"${newtonPath}\\packages\\projects\\${packagesLibPath}\\$(PlatformName)\\dJointLibrary\\debug\\*.pdb\"" "\"${PROJECT_SOURCE_DIR}\\bin\\release\\*.*\""  /F /Y /R
-							COMMAND xcopy  "\"${newtonPath}\\coreLibrary_300\\projects\\windows\\${newtonLibPath}\\${PlatformName}\\newton\\debug\\*.dll\"" "\"${PROJECT_SOURCE_DIR}\\bin\\release\\*.*\""  /F /Y /R
-							COMMAND xcopy  "\"${newtonPath}\\coreLibrary_300\\projects\\windows\\${newtonLibPath}\\${PlatformName}\\newton\\debug\\*.pdb\"" "\"${PROJECT_SOURCE_DIR}\\bin\\release\\*.*\""  /F /Y /R
+							COMMAND xcopy  "\"${newtonPath}\\packages\\projects\\${packagesLibPath}\\$(PlatformName)\\dNewton\\release\\*.dll\"" "\"${PROJECT_SOURCE_DIR}\\bin\\release\\*.*\""  /F /Y /R		
+							COMMAND xcopy  "\"${newtonPath}\\packages\\projects\\${packagesLibPath}\\$(PlatformName)\\dNewton\\release\\*.pdb\"" "\"${PROJECT_SOURCE_DIR}\\bin\\release\\*.*\""  /F /Y /R
+							COMMAND xcopy  "\"${newtonPath}\\packages\\projects\\${packagesLibPath}\\$(PlatformName)\\dContainers\\release\\*.dll\"" "\"${PROJECT_SOURCE_DIR}\\bin\\release\\*.*\""  /F /Y /R
+							COMMAND xcopy  "\"${newtonPath}\\packages\\projects\\${packagesLibPath}\\$(PlatformName)\\dContainers\\release\\*.pdb\"" "\"${PROJECT_SOURCE_DIR}\\bin\\release\\*.*\""  /F /Y /R
+							COMMAND xcopy  "\"${newtonPath}\\packages\\projects\\${packagesLibPath}\\$(PlatformName)\\dJointLibrary\\release\\*.dll\"" "\"${PROJECT_SOURCE_DIR}\\bin\\release\\*.*\""  /F /Y /R
+							COMMAND xcopy  "\"${newtonPath}\\packages\\projects\\${packagesLibPath}\\$(PlatformName)\\dJointLibrary\\release\\*.pdb\"" "\"${PROJECT_SOURCE_DIR}\\bin\\release\\*.*\""  /F /Y /R
+							COMMAND xcopy  "\"${newtonPath}\\coreLibrary_300\\projects\\windows\\${newtonLibPath}\\${PlatformName}\\newton\\release\\*.dll\"" "\"${PROJECT_SOURCE_DIR}\\bin\\release\\*.*\""  /F /Y /R
+							COMMAND xcopy  "\"${newtonPath}\\coreLibrary_300\\projects\\windows\\${newtonLibPath}\\${PlatformName}\\newton\\release\\*.pdb\"" "\"${PROJECT_SOURCE_DIR}\\bin\\release\\*.*\""  /F /Y /R
 							COMMAND xcopy  "\"${newtonPath}\\packages\\projects\\${packagesLibPath}\\$(PlatformName)\\dNewton\\release\\*.dll\"" "\"${PROJECT_SOURCE_DIR}\\bin\\release\\*.*\""  /F /Y /R		
 							COMMAND xcopy  "\"${newtonPath}\\packages\\projects\\${packagesLibPath}\\$(PlatformName)\\dNewton\\release\\*.pdb\"" "\"${PROJECT_SOURCE_DIR}\\bin\\release\\*.*\""  /F /Y /R		
 							COMMAND xcopy  "\"${newtonPath}\\packages\\projects\\${packagesLibPath}\\$(PlatformName)\\dJointLibrary\\release\\*.dll\"" "\"${PROJECT_SOURCE_DIR}\\bin\\release\\*.*\""  /F /Y /R		
 							COMMAND xcopy  "\"${newtonPath}\\packages\\projects\\${packagesLibPath}\\$(PlatformName)\\dJointLibrary\\release\\*.pdb\"" "\"${PROJECT_SOURCE_DIR}\\bin\\release\\*.*\""  /F /Y /R		
 							COMMAND xcopy  "\"${newtonPath}\\coreLibrary_300\\projects\\windows\\${newtonLibPath}\\${PlatformName}\\newton\\release\\*.dll\"" "\"${PROJECT_SOURCE_DIR}\\bin\\release\\*.*\""  /F /Y /R		
 							COMMAND xcopy  "\"${newtonPath}\\coreLibrary_300\\projects\\windows\\${newtonLibPath}\\${PlatformName}\\newton\\release\\*.pdb\"" "\"${PROJECT_SOURCE_DIR}\\bin\\release\\*.*\""  /F /Y /R)
-				  
 										  
 	endif (NOT buildStaticLibrary)
 
@@ -96,6 +101,7 @@ if (MSVC)
 																   /I${osgSDKBuild}/include 
 																   /I${newtonPath}/packages/dMath
 																   /I${newtonPath}/packages/dNewton
+																   /I${newtonPath}/packages/dContainers
 																   /I${newtonPath}/packages/dCustomJoints
 																   /I${newtonPath}/coreLibrary_300/source/newton")
 
